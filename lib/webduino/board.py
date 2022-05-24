@@ -5,6 +5,14 @@ from webduino.config import Config
 from webduino.webserver import WebServer
 import time, ubinascii, network, machine, os
 
+#####################
+try:
+    import cmd
+    machine.reset()
+except:
+    pass
+#####################
+
 class Board:
     
     Ver = '0.2.0b'
@@ -19,7 +27,7 @@ class Board:
         json = self.config.load()
         if(devId == ''): devId = json['devId']
         json['devId'] = devId
-        print("Device ID:"+devId)
+        debug.print("Device ID:"+devId)
         self.config.save()
         self.devId = devId
         self.devPasswd = json['devPasswd']
@@ -71,12 +79,15 @@ class Board:
         topic = topic.decode("utf-8")
         msg = msg.decode("utf-8")
         topic = topic.replace(self.devId+"/",'')
-        print("topic:"+topic+",msg:"+msg)
+        debug.print("topic:"+topic+",msg:"+msg)
         self.topics[topic](msg)
     
     def publish(self,topic,msg):
         self.mqtt.pub(topic,msg);
 
+    def pub(self,topic,msg):
+        self.mqtt.pub(topic,msg);
+        
     def loop(self):
         debug.print("run...")
         while True:
@@ -94,7 +105,7 @@ class Board:
                 #print("mqtt broken!")
                 pass
         if self.now % 600 == 0:
-            print("wifi check...",self.wifi.checkConnection(self.now))
+            debug.print("wifi check...",self.wifi.checkConnection(self.now))
             self.now = 0        
         
     def ping(self):
@@ -102,9 +113,9 @@ class Board:
 
     def report(self,cmd):
         report = cmd + ' '+self.devId
-        print("publish["+self.topic_report+"] "+report)
+        debug.print("publish["+self.topic_report+"] "+report)
         self.mqtt.pub(self.topic_report,report)
-        print("publish OK")
+        debug.print("publish OK")
     
     def setExtraCmdProcess(self,cb):
         Board.extraCmd = cb
@@ -114,13 +125,13 @@ class Board:
         
     def execCmd(self,data):
         dataArgs = data.split(' ')
-        print("exceCmd:",dataArgs)
+        debug.print("exceCmd:",dataArgs)
         cmd = dataArgs[0]
         
         if cmd == 'reboot':
             self.report('reboot')
             time.sleep(1)
-            print("restart...")
+            debug.print("restart...")
             machine.reset()
 
         elif cmd == 'ping':
@@ -153,5 +164,5 @@ class Board:
                 cmd = dataArgs.pop(0)
                 Board.extraCmd(cmd,dataArgs)
             except Exception as e:
-                print("Board extraCmd error:"+e)
+                debug.print("Board extraCmd error:"+e)
                 pass

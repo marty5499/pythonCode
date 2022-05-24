@@ -296,4 +296,6 @@ Res.get('','value.js')
 Res.get('','cam.html')
 """
 print("========")
+#Res.exe('lib/ssd1306.py') # OLED
+
 print('Mac address:',ubinascii.hexlify(network.WLAN().config('mac'),':').decode())

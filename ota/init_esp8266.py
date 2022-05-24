@@ -1,5 +1,5 @@
-board_devSSID ='nina'
-board_device_id = 'nina'
+board_devSSID ='martyTest'
+board_device_id = 'martyTest'
 
 import os, usocket, time, ubinascii, network, machine
 
@@ -237,24 +237,23 @@ def install(deviceId=''):
     # 開源必備
     Res.exe('lib/urequests.py')
     Res.exe('lib/umqtt/simple.py')
-
     # Webduino 類別庫
     Res.exe('lib/webduino/led.py')
     Res.exe('lib/webduino/config.py')
-    Res.exe('lib/webduino/gdriver.py')
-    Res.exe('lib/webduino/camera.py')
+    #Res.exe('lib/webduino/gdriver.py')
+    #Res.exe('lib/webduino/camera.py')
     Res.exe('lib/webduino/board.py')
     Res.exe('lib/webduino/mqtt.py')
     Res.exe('lib/webduino/wifi.py')
     Res.exe('lib/webduino/webserver.py')
     Res.exe('lib/webduino/debug.py')
-    Res.exe('lib/utils.py') # save url to file
+    #Res.exe('lib/utils.py') # save url to file
     Res.get('','index.html')
     
     from utils import Utils
     from webduino.config import Config
-    Utils.save('https://marty5499.github.io/pythonCode/app/boot.py','boot.py')
-    Utils.save('https://marty5499.github.io/pythonCode/app/CamApp.py','main.py')
+    #Utils.save('https://marty5499.github.io/pythonCode/app/boot.py','boot.py')
+    #Utils.save('https://marty5499.github.io/pythonCode/app/CamApp.py','main.py')
     Config.load()
     if(not deviceId == ''):
         Config.data['devId'] = deviceId
@@ -271,5 +270,4 @@ def install(deviceId=''):
     print('Mac address:',ubinascii.hexlify(network.WLAN().config('mac'),':').decode())
 
 install(deviceId = board_device_id)
-time.sleep(1)
-machine.reset()
+

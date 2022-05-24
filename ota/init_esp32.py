@@ -1,5 +1,5 @@
-board_devSSID ='nina'
-board_device_id = 'nina'
+board_devSSID ='wa'
+board_device_id = 'wa'
 
 import os, usocket, time, ubinascii, network, machine
 
@@ -8,15 +8,17 @@ def do_connect():
     sta_if = network.WLAN(network.STA_IF)
     sta_if.active(True)
     print('connecting to network...')
-    #sta_if.disconnect()
-    if(not sta_if.isconnected()):
-        sta_if.connect('KingKit_2.4G', 'webduino')
+    sta_if.disconnect()
+#    if(not sta_if.isconnected()):
+    sta_if.connect('KingKit_2.4G', 'webduino')
     cnt = 0
     while not sta_if.isconnected():
         cnt = cnt + 1
+        print("connect....."+str(cnt))
         time.sleep(0.5)
         if cnt == 60:
             break
+    print("connect!...wait config.")
     connected = sta_if.isconnected()
     print('network config:', sta_if.ifconfig())
 
@@ -253,8 +255,8 @@ def install(deviceId=''):
     
     from utils import Utils
     from webduino.config import Config
-    Utils.save('https://marty5499.github.io/pythonCode/app/boot.py','boot.py')
-    Utils.save('https://marty5499.github.io/pythonCode/app/CamApp.py','main.py')
+    #Utils.save('https://marty5499.github.io/pythonCode/app/boot.py','boot.py')
+    #Utils.save('https://marty5499.github.io/pythonCode/app/CamApp.py','main.py')
     Config.load()
     if(not deviceId == ''):
         Config.data['devId'] = deviceId
@@ -273,3 +275,4 @@ def install(deviceId=''):
 install(deviceId = board_device_id)
 time.sleep(1)
 machine.reset()
+
