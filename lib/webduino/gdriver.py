@@ -1,8 +1,6 @@
 import usocket
 
 class GDriver:
-    scriptId='AKfycbxhgMJ0MH74u2wJeevLmIJTC-cgBV3IuvtO_22mopfIdkjSfFXsbJE0DFDiuFKuyyiR'
-    scriptCode = 'https://script.google.com/u/1/home/projects/1I29nq5NHfhvYjGlssJyFG1RfwbTrKdRr1VE_vX3kI5t76mmytqUHsiMd/edit'
 
     def setScriptURL(scriptURL):
         GDriver.scriptURL = scriptURL
@@ -11,7 +9,7 @@ class GDriver:
         GDriver.folderId = folderId
         
     def upload(image,filename):
-        url = 'https://script.google.com/macros/s/'+GDriver.scriptId+'/exec'
+        url = 'https://script.google.com/macros/s/'+GDriver.scriptURL+'/exec'
         myFilename = "filename="+str(filename)+"&folderId="+GDriver.folderId+"&data="
         data = myFilename + image.decode()
         try:
