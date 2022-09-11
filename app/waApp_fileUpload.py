@@ -1,8 +1,20 @@
-import ussl,usocket
+from webduino.board import Board
+from webduino.led import LED
+import ntptime,time, machine, urequests, gc, os, ussl
+from webduino.camera import Camera
+import usocket
 
 class FileBrowser():
     
     token = ''
+    
+    def initCamera(ledPin=4):
+        print("cam init...")
+        led = LED(ledPin)
+        led.blink(0.25)
+        Camera.init()
+        led.blink(0)
+        gc.collect()
         
     def procResponse(s):
         l = s.readline()
@@ -77,3 +89,26 @@ class FileBrowser():
         s.write(image)
         return FileBrowser.procResponse(s)
 
+#####################
+try:
+    import cmd
+    machine.reset()
+except:
+    pass
+#####################
+try:
+    print("==")
+    print("-=-=-=-= base =-=-=-=-")
+    print("==")
+    board = Board(devId='0911')
+    FileBrowser.initCamera()
+    #print("login...")
+    #FileBrowser.login('admin','wa525420')[1]
+    print("fileUpload...")
+    resp = FileBrowser.upload(Camera.capture(),'zz.jpg')
+    print("body:%s"%resp[1])
+    #board.loop()
+except Exception as e:
+    print(e)
+    print('')
+    machine.reset()

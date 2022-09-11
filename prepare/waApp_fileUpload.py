@@ -5,7 +5,8 @@ from webduino.camera import Camera
 import usocket
 
 class FileBrowser:
-
+    token = ''
+    
     def initCamera(ledPin=4):
         print("cam init...")
         led = LED(ledPin)
