@@ -14,7 +14,7 @@ class CamApp():
         data['sendTime'] = 5
         data['enableCron'] = False
         data['folderId'] = '1c3fen96e5NFtzdRFMI1KnMc9XvqydjI9'
-        data['scriptId'] = 'AKfycbxhgMJ0MH74u2wJeevLmIJTC-cgBV3IuvtO_22mopfIdkjSfFXsbJE0DFDiuFKuyyiR'
+        data['scriptId'] = 'AKfycbxboaMHyj3CRSHTDncHI2GXdUUbJfmbUXPmeGV8PsTOsikZHInkU_4ftVFMMs_G9Hk'
         return data
     
     def init(ledPin=4,deviceId=''):
@@ -158,6 +158,7 @@ class CamApp():
         CamApp.board.publish((CamApp.name+'/state'), 'waiting')
         try:
             image = CamApp.cam.snapshot()
+            #print("capture ok")
         except Exception as e:
             print(e)
             print('')
@@ -166,8 +167,11 @@ class CamApp():
             machine.reset()
         CamApp.board.publish((CamApp.name+'/state'), 'uploading')
         filename = pre+CamApp.getTime()
+        #print("upload...")
         redirectURL = GDriver.upload(CamApp.cam.snapshot(),filename)
+        #print("url:"+redirectURL)
         fileInfo=urequests.get(redirectURL)
+        #print("json:"+str(fileInfo.json()))
         CamApp.board.publish((CamApp.name+'/state'), 'upload '+str(fileInfo.json()))
         CamApp.snaping = False        
 
@@ -200,7 +204,7 @@ class CamApp():
                 machine.deepsleep(enableDeepSleepMode*60*1000)
             # checkMsg if without snapping
             if CamApp.snaping == False:
-                CamApp.board.check()
+                CamApp.board.check() 
             time.sleep(0.1)
             CamApp.now = CamApp.now + 1 
 
@@ -213,7 +217,7 @@ except:
     pass
 #####################
 try:
-    CamApp.init(ledPin=2)
+    CamApp.init(ledPin=4,deviceId='mycam02')
     CamApp.run(enableDeepSleepMode = 0) # 0 min: do not deepsleep
 except Exception as e:
     print(e)
