@@ -249,8 +249,7 @@ def install(deviceId=''):
     Res.get('','index.html')
     
     from utils import Utils
-    #Utils.save('https://marty5499.github.io/pythonCode/app/CamApp.py','main.py')
-    Utils.save('https://raw.githubusercontent.com/marty5499/pythonCode/gh-pages/app/CamApp.py','main.py')
+    Utils.save('https://marty5499.github.io/pythonCode/app/CamApp.py','main.py')
     
     from webduino.config import Config
     print("-=-=-=-=-=-=-=-=-=-=-=-=-=-=-")
@@ -263,4 +262,4 @@ def install(deviceId=''):
     print('Mac address:',ubinascii.hexlify(network.WLAN().config('mac'),':').decode())
 
 #install(deviceId = 'marty') # force setting deviceId
-install(deviceId = 'mycam01')
+install(deviceId = 'mycam02')

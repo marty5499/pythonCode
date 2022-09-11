@@ -28,3 +28,6 @@ class Camera():
         time.sleep(0.1)
         gc.collect()
         return image
+
+    def capture():
+        return camera.capture()
