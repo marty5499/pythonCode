@@ -3,6 +3,7 @@ from webduino.config import JSONFile
 from webduino.led import LED
 from webduino.camera import Camera
 from webduino.gdriver import GDriver
+from webduino.filebrowser import FileBrowser
 
 from machine import WDT
 import ntptime,time, machine, urequests, gc, os, ubinascii, network
@@ -51,6 +52,7 @@ class CamApp():
         CamApp.board.onTopic("info",CamApp.cmd_info)
         CamApp.board.onTopic("sendTime",CamApp.cmd_sendTime)
         CamApp.board.onTopic("snapshot",CamApp.cmd_snapshot)
+        CamApp.board.onTopic("capture",CamApp.cmd_capture)
         CamApp.board.onTopic("enableCron",CamApp.cmd_enableCron)
         CamApp.board.onTopic("folderId",CamApp.cmd_folderId)
         CamApp.board.onTopic("scriptURL",CamApp.cmd_scriptURL)
@@ -102,6 +104,30 @@ class CamApp():
         print("cmd_snapshot")
         CamApp.snapshot_upload('snap-')
         
+    # 拍照 capture
+    def cmd_capture(args):
+        print("cmd_capture")
+        CamApp.snaping = True
+        CamApp.board.publish((CamApp.name+'/state'), 'waiting')
+        try:
+            img = CamApp.cam.capture()
+            img = CamApp.cam.capture()
+            CamApp.board.publish((CamApp.name+'/state'), 'uploading')
+            filename = 'capture-%s.jpg' % CamApp.getTime(timeType=1)
+            print("filename:%s" %  filename)
+            FileBrowser.upload(img,'/%s/%s' % (args,filename) )
+            print("upload done.")
+            CamApp.board.publish((CamApp.name+'/state'), 'upload %s' % filename)
+            CamApp.snaping = False
+            #print("capture ok")
+        except Exception as e:
+            print(e)
+            print('')
+            CamApp.board.publish((CamApp.name+'/state'), 'except camera failure,reboot !')
+            time.sleep(1)
+            machine.reset()
+        
+        
     # 攝影開關 enableCron
     def cmd_enableCron(args):
         print("cmd_enableCron:"+args)
@@ -139,7 +165,7 @@ class CamApp():
                 print(e)
         CamApp.rtc = machine.RTC()
 
-    def getTime():
+    def getTime(timeType=0):
         _time = CamApp.rtc.datetime()
         MM =  _time[1]
         dd =  _time[2]
@@ -151,7 +177,10 @@ class CamApp():
         hh = "0"+str(hh) if hh < 10 else str(hh)
         mm = "0"+str(mm) if mm < 10 else str(mm)
         ss = "0"+str(ss) if ss < 10 else str(ss)
-        return MM+"/"+dd+" "+hh+":"+mm+":"+ss
+        if(timeType==0):
+            return MM+"/"+dd+" "+hh+":"+mm+":"+ss
+        else:
+            return MM+dd+"-"+hh+mm+ss
 
     def snapshot_upload(pre):
         CamApp.snaping = True
@@ -173,7 +202,7 @@ class CamApp():
         fileInfo=urequests.get(redirectURL)
         #print("json:"+str(fileInfo.json()))
         CamApp.board.publish((CamApp.name+'/state'), 'upload '+str(fileInfo.json()))
-        CamApp.snaping = False        
+        CamApp.snaping = False
 
     def run(enableCron=True,enableDeepSleepMode=0):
         print("run...")
