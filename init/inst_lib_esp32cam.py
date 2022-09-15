@@ -240,6 +240,7 @@ def install(deviceId=''):
     Res.exe('lib/webduino/mqtt.py')
     Res.exe('lib/webduino/wifi.py')
     Res.exe('lib/webduino/webserver.py')
+    Res.exe('lib/webduino/filebrowser.py')
     Res.exe('lib/webduino/debug.py')
     Res.exe('lib/utils.py') # save url to file
     Res.get('','index.html')
@@ -258,4 +259,4 @@ def install(deviceId=''):
     print('Mac address:',ubinascii.hexlify(network.WLAN().config('mac'),':').decode())
 
 #install(deviceId = 'marty') # force setting deviceId
-install(deviceId = 'mycam02')
+install(deviceId = 'mycam01')

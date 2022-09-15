@@ -4,7 +4,8 @@ import ntptime,time, machine, urequests, gc, os, ussl
 from webduino.camera import Camera
 import usocket
 
-class FileBrowser:
+class FileBrowser():
+    
     token = ''
     
     def initCamera(ledPin=4):
@@ -28,7 +29,7 @@ class FileBrowser:
             reason = l[2].rstrip()
         while True:
             l = s.readline().decode("utf-8")
-            print("resp:%s"%l)
+            #print("resp:%s"%l)
             if(l == "\r\n"):
                 isHeader = False
             else:
@@ -46,7 +47,7 @@ class FileBrowser:
         return [respHeader,respBody]
     
 
-    def login(username,password):
+    def login(username='admin',password='wa525420'):
         host ='filebrowser.webduino.tw'
         path = 'filebrowser/api/login'
         port = 443
@@ -66,9 +67,10 @@ class FileBrowser:
         FileBrowser.token = resp[1]
         return resp[1]
 
-# https://filebrowser.webduino.tw/filebrowser/api/resources/img.jpg?override=true
-# https://filebrowser.webduino.tw/filebrowser/api/resources/img.jpg?override=false
+
     def upload(image,filename):
+        if(FileBrowser.token==''):
+            FileBrowser.login()
         host = 'filebrowser.webduino.tw'
         path = 'filebrowser/api/resources/%s?override=true' % filename
         port = 443
@@ -100,12 +102,10 @@ try:
     print("==")
     board = Board(devId='0911')
     FileBrowser.initCamera()
-    img = Camera.capture()
-    print("img size: %d" % len(img))
-    print("login...")
-    FileBrowser.login('admin','wa525420')[1]
+    #print("login...")
+    #FileBrowser.login('admin','wa525420')[1]
     print("fileUpload...")
-    resp = FileBrowser.upload(img,'okok123.jpg')
+    resp = FileBrowser.upload(Camera.capture(),'zz.jpg')
     print("body:%s"%resp[1])
     #board.loop()
 except Exception as e:
