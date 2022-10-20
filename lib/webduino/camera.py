@@ -9,12 +9,14 @@ class Camera():
             Camera.initState = 0
         if Camera.initState is not 1:
             try:
-                camera.init(0, format=camera.JPEG,xclk_freq=camera.XCLK_20MHz)
-                camera.framesize(15)
-                camera.quality(10)
-                camera.framesize(camera.FRAME_UXGA)
-                time.sleep(0.1)
-                Camera.initState = 1
+                #camera.init(0, format=camera.JPEG,xclk_freq=camera.XCLK_20MHz)
+                #camera.init(0, format=camera.JPEG,xclk_freq=camera.XCLK_20MHz)
+                camera.init(0, format=camera.JPEG)
+                #camera.framesize(15)
+                #camera.quality(10)
+                #camera.framesize(camera.FRAME_UXGA)
+                #time.sleep(0.1)
+                #Camera.initState = 1
             except:
                 print("Camera exception !!!")
                 Camera.initState = -1

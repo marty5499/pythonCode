@@ -245,10 +245,10 @@ def install(deviceId=''):
     Res.exe('lib/webduino/board.py')
     Res.exe('lib/webduino/mqtt.py')
     Res.exe('lib/webduino/wifi.py')
-    Res.exe('lib/webduino/webserver.py')
+    Res.exe('lib/webduino/webserver .py')
     Res.exe('lib/webduino/debug.py')
     #Res.exe('lib/uyeelight.py') # save url to file
-    #Res.exe('lib/utils.py') # save url to file
+    Res.exe('lib/utils.py') # save url to file
     #Res.get('','index.html')
     
     from utils import Utils

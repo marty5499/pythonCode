@@ -67,6 +67,7 @@ class Board:
                 break
         debug.print("WiFi Ready , MQTT Ready , ready to go...")
         self.mqtt.sub(self.devId+"/#",self.dispatch)
+        self.mqtt.set_last_will(self.topic_report, 'disconnect', retain=True, qos=1)
         self.onTopic('cmd',self.execCmd)
         self.report('boot')
         return self

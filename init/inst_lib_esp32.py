@@ -10,7 +10,7 @@ def do_connect():
     print('connecting to network...')
     sta_if.disconnect()
 #    if(not sta_if.isconnected()):
-    sta_if.connect('KingKit_2.4G', 'webduino')
+    sta_if.connect('webduino.io2', 'webduino')
     cnt = 0
     while not sta_if.isconnected():
         cnt = cnt + 1
@@ -239,6 +239,9 @@ def install(deviceId=''):
     # 開源必備
     Res.exe('lib/urequests.py')
     Res.exe('lib/umqtt/simple.py')
+
+    # 串接元件
+    Res.exe('lib/uyeelight.py')
 
     # Webduino 類別庫
     Res.exe('lib/webduino/led.py')

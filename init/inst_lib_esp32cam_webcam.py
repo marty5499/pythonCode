@@ -232,31 +232,18 @@ def install(deviceId=''):
     Res.exe('lib/umqtt/simple.py')
 
     # Webduino 類別庫
-    Res.exe('lib/webduino/led.py')
-    Res.exe('lib/webduino/config.py')
-    Res.exe('lib/webduino/gdriver.py')
-    Res.exe('lib/webduino/camera.py')
-    Res.exe('lib/webduino/board.py')
-    Res.exe('lib/webduino/mqtt.py')
-    Res.exe('lib/webduino/wifi.py')
-    Res.exe('lib/webduino/webserver.py')
-    Res.exe('lib/webduino/filebrowser.py')
-    Res.exe('lib/webduino/debug.py')
-    Res.exe('lib/utils.py') # save url to file
-    Res.get('','index.html')
+    Res.exe('lib/webcam/Wifi/Ap.py')
+    Res.exe('lib/webcam/Wifi/Sta.py')
     
-    from utils import Utils
-    Utils.save('https://marty5499.github.io/pythonCode/app/CamApp.py','main.py')
+    Res.exe('lib/webcam/uasyncio/__init__.py')
+    Res.exe('lib/webcam/uasyncio/core.py')
     
-    from webduino.config import Config
-    print("-=-=-=-=-=-=-=-=-=-=-=-=-=-=-")
-    print("-    Device ID: ["+deviceId+"]    -")
-    Config.load()
-    #if(not default == ''):
-    Config.data['devId'] = deviceId
-    Config.save()
-    print("-=-=-=-=-=-=-=-=-=-=-=-=-=-=-")
-    print('Mac address:',ubinascii.hexlify(network.WLAN().config('mac'),':').decode())
+    Res.exe('lib/webcam/async_tasks_webcam_ap.py')
+    Res.exe('lib/webcam/async_tasks_webcam_ap.py')
+    Res.exe('lib/webcam/mth_webcam.py')
+    Res.exe('lib/webcam/webcam.py')
+    
+    
 
 #install(deviceId = 'marty') # force setting deviceId
 install(deviceId = 'marty')
