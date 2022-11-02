@@ -231,17 +231,10 @@ def install(deviceId=''):
     Res.exe('lib/urequests.py')
     Res.exe('lib/umqtt/simple.py')
 
-    # Webduino 類別庫
+    # WebStream 類別庫
     Res.exe('lib/webcam/Wifi/Ap.py')
     Res.exe('lib/webcam/Wifi/Sta.py')
-    
-    Res.exe('lib/webcam/uasyncio/__init__.py')
-    Res.exe('lib/webcam/uasyncio/core.py')
-    
-    Res.exe('lib/webcam/async_tasks_webcam_ap.py')
-    Res.exe('lib/webcam/async_tasks_webcam_ap.py')
-    Res.exe('lib/webcam/mth_webcam.py')
-    Res.exe('lib/webcam/webcam.py')
+    Res.exe('lib/webcam/webstream.py')
     
     
 
