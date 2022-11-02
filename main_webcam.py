@@ -1,18 +1,15 @@
 
 import usocket as soc
-import uasyncio as sy
+import _thread as th
 import camera
 import time
 import esp
 from machine import Pin
 import gc
-from Wifi.Sta import Sta
+from lib.webcam.Wifi.Sta import Sta
 
 #esp.osdebug(False)
 esp.osdebug(True)
-
-def foo(p):
-   print('FOO here', p[0]+p[1])
 
 hdr = {
   # start page for streaming 
@@ -22,11 +19,11 @@ Content-Type: text/html; charset=utf-8
 
 <html>
 <head>
-<title>Looking out of my window</title>
+<title>Web Camera</title>
 </head>
 <body>
   <center>
-    <h1>Looking out of my window...</h1>
+    <h1>Web Camera</h1>
     <img src="/apikey/live" width=720 height=540 />
   </center>
 </body>
@@ -92,26 +89,24 @@ def clean_up(cs):
    gc.collect()
 
 def frame_gen():
-   #buf = b' '
    while True:
      buf = camera.capture()
      yield buf
      del buf
      gc.collect()
 
-async def send_frame(pp):
+def send_frame(pp):
    cs, h = pp
    while True:
       ee = ''
       try:
          cs.send(b'%s' % h)
-         #cs.send(camera.capture())
          cs.send(next(pic))
          cs.send(b'\r\n')  # send and flush the send buffer
       except Exception as e:
         ee = str(e)
       if ee == '': 
-        await sy.sleep_ms(5)  # try as fast as we can
+        time.sleep(0.005)  # try as fast as we can
       else:
         break
 
@@ -125,7 +120,7 @@ def servers():
    s.setsockopt(soc.SOL_SOCKET, soc.SO_REUSEADDR, 1)
    a = ('0.0.0.0', 80)
    s.bind(a)
-   s.listen(3)  # at most 3 clients
+   s.listen(2)  # queue at most 2 clients
    socks.append(s)
 
    # port 81 server - still picture server
@@ -133,7 +128,7 @@ def servers():
    s.setsockopt(soc.SOL_SOCKET, soc.SO_REUSEADDR, 1)
    a = ('0.0.0.0', 81)
    s.bind(a)
-   s.listen(3)
+   s.listen(2)
    socks.append(s)
 
    # port 82 server - cmd server
@@ -141,12 +136,12 @@ def servers():
    s.setsockopt(soc.SOL_SOCKET, soc.SO_REUSEADDR, 1)
    a = ('0.0.0.0', 82)
    s.bind(a)
-   s.listen(3)
+   s.listen(2)
    socks.append(s)
 
    return socks
 
-async def port1(cs, rq):
+def port1(cs, rq):
    rqp = rq[1].split('/')
    if rqp[1] == 'apikey': # Must have /apikey/<REQ>
       if rqp[2] == 'webcam':
@@ -154,8 +149,8 @@ async def port1(cs, rq):
          clean_up(cs)
       elif rqp[2] == 'live': # start streaming
          cs.send(b'%s' % hdr['stream'])
-         # schedule frame sending
-         await send_frame([cs, hdr['frame']])
+         # start frame sending
+         send_frame([cs, hdr['frame']])
       else: # 
          cs.send(b'%s' % hdr['none'])
          clean_up(cs)
@@ -163,12 +158,11 @@ async def port1(cs, rq):
       cs.send(b'%s' % hdr['err'])
       clean_up(cs)
 
-async def port2(cs, rq):
+def port2(cs, rq):
    rqp = rq[1].split('/')
    if rqp[1] == 'apikey': # Must have /apikey/<REQ>
       if rqp[2] == 'snap':
          try:
-            #img=camera.capture()
             img=next(pic)
             cs.send(b'%s %d\r\n\r\n' % (hdr['snap'], len(img)))
             cs.send(img)
@@ -178,7 +172,6 @@ async def port2(cs, rq):
       elif rqp[2] == 'blitz':
          try:
             flash_light.on()
-            #img=camera.capture()
             img=next(pic)
             flash_light.off()
             cs.send(b'%s %d\r\n\r\n' % (hdr['snap'], len(img)))
@@ -192,7 +185,7 @@ async def port2(cs, rq):
       cs.send(b'%s' % hdr['err'])
    clean_up(cs)
 
-async def port3(cs, rq):
+def port3(cs, rq):
    rqp = rq[1].split('/')
    if rqp[1] == 'apikey': # Must have /apikey/<REQ>
       if rqp[2] == 'flash': # /apikey/flash/<what>
@@ -200,6 +193,11 @@ async def port3(cs, rq):
             flash_light.on()
          else:
             flash_light.off()
+         cs.send(b'%s' % hdr['OK'])
+      elif rqp[2] == 'fmt':
+         w = int(rqp[3])
+         if w>=0 and w<=2:
+            camera.pixformat(w)
          cs.send(b'%s' % hdr['OK'])
       elif rqp[2] == 'pix':
          w = int(rqp[3])
@@ -226,6 +224,21 @@ async def port3(cs, rq):
          if w>-3 and w<3:
             camera.brightness(w)
          cs.send(b'%s' % hdr['OK'])
+      elif rqp[2] == 'ael':
+         w = int(rqp[3])
+         if w>-3 and w<3:
+            camera.aelevels(w)
+         cs.send(b'%s' % hdr['OK'])
+      elif rqp[2] == 'aev':
+         w = int(rqp[3])
+         if w>=0 and w<=1200:
+            camera.aecvalue(w)
+         cs.send(b'%s' % hdr['OK'])
+      elif rqp[2] == 'agc':
+         w = int(rqp[3])
+         if w>=0 and w<=30:
+            camera.agcgain(w)
+         cs.send(b'%s' % hdr['OK'])
       elif rqp[2] == 'spe':
          w = int(rqp[3])
          if w>=0 and w<7:
@@ -237,61 +250,70 @@ async def port3(cs, rq):
             camera.whitebalance(w)
          cs.send(b'%s' % hdr['OK'])
       else:
-         cs.send(b'%s' % hdr['OK'])
+         cs.send(b'%s' % hdr['none'])
    else:
-      loop.create_task(foo([7, 5]))
-      cs.send(b'%s' % hdr['OK'])
-
+      cs.send(b'%s' % hdr['err'])
    clean_up(cs)
 
-async def srv(p):
-  sa = socks[p] # scheduled server
+def srv(p):
+  sa = socks[p] # start server; catch error - loop forever
   while True:
-     ok = True
-     ee = ''
-     yield
      try:
-        sa.settimeout(0.05) # in sec NB! default browser timeout (5-15 min)
-        cs, ca = sa.accept()
-        cs.settimeout(0.5) # in sec
-     except Exception as e:
-        ee = str(e)
-     if ee != '':
-        # print('Socket %d accept - %s' % (p, ee.split()[-1]))
-        #ee = ''
-        pass
-        ok = False
-     yield
-     if ok: # No soc.accept timeout
+        ok = True
         ee = ''
         try:
-           # client accepted 
-           r = cs.recv(1024)
-           # REQ: b''  # may be due to very short timeout
+           sa.settimeout(0.05) # in sec NB! default browser timeout (5-15 min)
+           cs, ca = sa.accept()
+           cs.settimeout(0.5) # in sec
         except Exception as e:
            ee = str(e)
         if ee != '':
-           print(ee)
+           # print('Socket %d accept - %s' % (p, ee.split()[-1]))
+           #ee = ''
+           pass
            ok = False
-        else:
-           ms = r.decode('utf-8')
-           if ms.find('favicon.ico') < 0:
-              rq = ms.split(' ')
-              try:
-                 print(rq[0], rq[1], ca)
-              except:
-                 ok = False
-           else:
-              cs.send(b'%s' % hdr['favicon']) # handle favicon request early
-              clean_up(cs)
+        if ok: # No soc.accept timeout
+           ee = ''
+           try:
+              # client accepted 
+              r = cs.recv(1024)
+              # REQ: b''  # may be due to very short timeout
+           except Exception as e:
+              ee = str(e)
+           if ee != '':
+              print(ee)
               ok = False
-     yield
-     if ok: # No soc.recv timeout or favicon request
-        await ports[p](cs, rq)
+           else:
+              ms = r.decode('utf-8')
+              if ms.find('favicon.ico') < 0:
+                 rq = ms.split(' ')
+                 try:
+                    print(rq[0], rq[1], ca)
+                 except:
+                    ok = False
+              else:
+                 cs.send(b'%s' % hdr['favicon']) # handle favicon request early
+                 clean_up(cs)
+                 ok = False
+        if ok: # No soc.recv timeout or favicon request
+           try:
+              ports[p](cs, rq)
+           except Exception as e:
+              ee = str(e)
+              if ee != '':
+                 print(ee)
+     except Exception as e:
+        ee = str(e)
+        if ee != '':
+           print(ee)
 
+
+#------------------
 wc = 0
 while True:
-  cr = camera.init()
+  cr = camera.init(0, format=camera.JPEG)
+  camera.quality(10)
+  camera.framesize(camera.FRAME_VGA)  
   print("Camera ready?: ", cr)
   if cr:
     break
@@ -303,9 +325,6 @@ while True:
 if not cr:
   print("Camera not ready. Can't continue!")
 else:
-  # reconfigure camera
-  # camera.speffect(2) # black and white
-  # camera.quality(10)  # increase quality from 12 (default) to 10
   # setup networking
   w = Sta()
   w.connect()
@@ -324,15 +343,15 @@ else:
      flash_light = Pin(04,Pin.OUT)
      socks = servers()
      ports = [port1, port2, port3] # 80, 81, 82
-     loop = sy.get_event_loop()
-     # schedule each srv twice
-     for i in range(len(socks)):
-        if i == 0:
-           loop.create_task(srv(i)) # schedule 2 servers for port 80
-           loop.create_task(srv(i)) # streaming hold socket until client
-                                    # terminate, we service at most 2 clients
-        else:
-           loop.create_task(srv(i)) # only one for 81 and 82
+
+     # schedule 2 servers for port 80
+     # streaming hold socket until client terminate,
+     # so, we service at most 2 clients on port 80
+     th.start_new_thread(srv, (0,))
+     th.start_new_thread(srv, (0,))
+
+     # schedule 1 server for port 81
+     th.start_new_thread(srv, (1,))
 
      #
      # schedule other processes here
@@ -340,4 +359,8 @@ else:
 
      # go for it!
      print("Up Up and Away!")
-     loop.run_forever()
+
+     # let the main thread take care of port 82 - block REPL
+     srv(2)
+
+

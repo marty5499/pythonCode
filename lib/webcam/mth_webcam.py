@@ -1,4 +1,3 @@
-
 import usocket as soc
 import _thread as th
 import camera
@@ -6,7 +5,7 @@ import time
 import esp
 from machine import Pin
 import gc
-from Wifi.Sta import Sta
+from lib.webcam.Wifi.Sta import Sta
 
 #esp.osdebug(False)
 esp.osdebug(True)
@@ -24,7 +23,7 @@ Content-Type: text/html; charset=utf-8
 <body>
   <center>
     <h1>Web Camera</h1>
-    <img src="/apikey/live" width=720 height=540 />
+    <img src="/apikey/live" width=1280 height=1080 />
   </center>
 </body>
 </html>
@@ -105,13 +104,13 @@ def send_frame(pp):
          cs.send(b'\r\n')  # send and flush the send buffer
       except Exception as e:
         ee = str(e)
-      if ee == '': 
+      if ee == '':
         time.sleep(0.005)  # try as fast as we can
       else:
         break
 
    clean_up(cs)
-   return   
+   return
 
 def servers():
    socks = []
@@ -311,7 +310,12 @@ def srv(p):
 #------------------
 wc = 0
 while True:
-  cr = camera.init()
+  cr = camera.init(0, format=camera.JPEG)
+  camera.quality(15)
+  #camera.framesize(camera.FRAME_HD)
+  camera.framesize(camera.FRAME_SXGA) # top level
+  #camera.framesize(camera.FRAME_UXGA)
+  
   print("Camera ready?: ", cr)
   if cr:
     break
@@ -360,4 +364,3 @@ else:
 
      # let the main thread take care of port 82 - block REPL
      srv(2)
-

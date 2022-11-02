@@ -1,7 +1,7 @@
 import uerrno
 import uselect as select
 import usocket as _socket
-from uasyncio.core import *
+from lib.webcam.uasyncio.core import *
 
 
 DEBUG = 0
