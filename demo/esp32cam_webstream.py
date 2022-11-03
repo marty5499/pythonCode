@@ -1,26 +1,26 @@
 import camera
-import time
-import esp
 import machine
-import gc
-from machine import Pin
-from lib.webcam.Wifi.Sta import Sta
-from lib.webcam.webstream import webstream
- 
-esp.osdebug(True)
+from webduino.board import Board
+from webduino.webstream import webstream
+
+def initCamera():
+    try:
+        camera.init(0, format=camera.JPEG)
+        camera.quality(15)
+        camera.framesize(camera.FRAME_HD) # FRAME_VGA, FRAME_SVGA, FRAME_HD, FRAME_SXGA, FRAME_UXGA
+    except:
+        machine.reset()    
+
+def cb(cmd):
+    print(">> "+cmd)
 
 try:
-    camera.init(0, format=camera.JPEG)
-    camera.quality(15)
-    camera.framesize(camera.FRAME_HD) # FRAME_VGA, FRAME_SVGA, FRAME_HD, FRAME_SXGA, FRAME_UXGA
-except:
+    initCamera()
+    board = Board(devId='smart')
+    webstream.start(camera)
+    board.onTopic("test",cb)
+    print("start webStream...")
+    board.loop()
+except Exception as e:
+    print(e)
     machine.reset()
-
-w = Sta()
-w.connect()
-w.wait()
-
-print("start webStream...")
-webstream.start(camera)
-print("go for it...")
-

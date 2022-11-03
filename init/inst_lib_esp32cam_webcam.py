@@ -230,13 +230,22 @@ def install(deviceId=''):
     # 開源必備
     Res.exe('lib/urequests.py')
     Res.exe('lib/umqtt/simple.py')
+    
+    # Webduino 類別庫
+    Res.exe('lib/webduino/led.py')
+    Res.exe('lib/webduino/config.py')
+    Res.exe('lib/webduino/gdriver.py')
+    Res.exe('lib/webduino/camera.py')
+    Res.exe('lib/webduino/board.py')
+    Res.exe('lib/webduino/mqtt.py')
+    Res.exe('lib/webduino/wifi.py')
+    Res.exe('lib/webduino/webserver.py')
+    Res.exe('lib/webduino/webstream.py')
+    Res.exe('lib/webduino/filebrowser.py')
+    Res.exe('lib/webduino/debug.py')
+    Res.exe('lib/utils.py') # save url to file
+    Res.get('','index.html')
 
-    # WebStream 類別庫
-    Res.exe('lib/webcam/Wifi/Ap.py')
-    Res.exe('lib/webcam/Wifi/Sta.py')
-    Res.exe('lib/webcam/webstream.py')
-    
-    
 
 #install(deviceId = 'marty') # force setting deviceId
 install(deviceId = 'marty')

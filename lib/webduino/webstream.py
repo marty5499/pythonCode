@@ -90,7 +90,7 @@ OK!
        # port 80 server - streaming server
        s = soc.socket(soc.AF_INET, soc.SOCK_STREAM)
        s.setsockopt(soc.SOL_SOCKET, soc.SO_REUSEADDR, 1)
-       s.bind(('0.0.0.0', 80))
+       s.bind(('', 8080))
        s.listen(1)  # queue at most 2 clients
        return s
     
@@ -184,4 +184,3 @@ OK!
                     webstream.clean_up(cs)
                 except Exception as e:
                     print(str(idx) + ":processReq err:" + str(e))
-
