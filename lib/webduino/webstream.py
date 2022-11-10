@@ -126,13 +126,15 @@ OK!
 
     def processReq(idx, cs, rq):
        rqp = rq[1].split('/')
+       args1 = str(rqp[1])
+       args2 = str(rqp[2])
        if rqp[1] == 'apikey': # Must have /apikey/<REQ>
-          if rqp[2] == 'webcam':
+          if args1 == 'webcam':
              cs.send(b'%s' % webstream.hdr['live'])
-          elif rqp[2] == 'live': # start streaming
+          elif args2.startswith('live'): # start streaming
              cs.send(b'%s' % webstream.hdr['stream'])
              webstream.send_frame(idx, [cs, webstream.hdr['frame']])
-          elif rqp[2] == 'snap':
+          elif args2.startswith('snap'):
              try:
                 img=next(webstream.pic)
                 cs.send(b'%s %d\r\n\r\n' % (webstream.hdr['snap'], len(img)))
