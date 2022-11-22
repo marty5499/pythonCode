@@ -84,10 +84,10 @@ class Board:
         self.topics[topic](msg)
     
     def publish(self,topic,msg):
-        self.mqtt.pub(topic,msg);
+        self.mqtt.pub(topic,msg)
 
     def pub(self,topic,msg):
-        self.mqtt.pub(topic,msg);
+        self.mqtt.pub(topic,msg)
         
     def loop(self):
         debug.print("run...")

@@ -1,7 +1,8 @@
 from machine import Pin
-import mfrc522, time
+from mfrc522 import MFRC522
+import time
 
-rfid = mfrc522.MFRC522(0, 2, 4, 15,5)
+rfid = MFRC522(0, 2, 4, 15,5)
                     #(sck, mosi, miso, rst, cs):
 
 led = Pin(2, Pin.OUT)

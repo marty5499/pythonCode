@@ -223,15 +223,29 @@ class Res:
 
 
 
+### lib's single file max size: 8256 Bytes (ESP01)
+# WiFi Connect
 print("connect...")
 do_connect()
 print("get files...")
-### lib's single file max size: 8256 Bytes (ESP01)
-Res.exe('lib/utils.py')
-Res.exe('lib/webduino.py')
+# 開源必備
 Res.exe('lib/urequests.py')
-Res.exe('lib/WebServer.py')
 Res.exe('lib/umqtt/simple.py')
+# Webduino 類別庫
+Res.exe('lib/webduino/led.py')
+Res.exe('lib/webduino/config.py')
+#Res.exe('lib/webduino/gdriver.py')
+#Res.exe('lib/webduino/camera.py')
+Res.exe('lib/webduino/board.py')
+Res.exe('lib/webduino/mqtt.py')
+Res.exe('lib/webduino/wifi.py')
+Res.exe('lib/webduino/webserver.py')
+Res.exe('lib/webduino/debug.py')
+#Res.exe('lib/uyeelight.py') # save url to file
+Res.exe('lib/utils.py') # save url to file
+#Res.get('','index.html')
+
+
 
 print("========")
 print('Mac address:',ubinascii.hexlify(network.WLAN().config('mac'),':').decode())

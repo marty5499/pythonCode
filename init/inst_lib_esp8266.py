@@ -233,7 +233,7 @@ def install(deviceId=''):
     print("connect...")
     do_connect()
     print("get files...")
-
+    
     # 開源必備
     Res.exe('lib/urequests.py')
     Res.exe('lib/umqtt/simple.py')
@@ -245,15 +245,17 @@ def install(deviceId=''):
     Res.exe('lib/webduino/board.py')
     Res.exe('lib/webduino/mqtt.py')
     Res.exe('lib/webduino/wifi.py')
-    Res.exe('lib/webduino/webserver .py')
+    Res.exe('lib/webduino/webserver.py')
     Res.exe('lib/webduino/debug.py')
     #Res.exe('lib/uyeelight.py') # save url to file
     Res.exe('lib/utils.py') # save url to file
+    #Res.exe('lib/ssd1306.py') # save url to file
+    # ESP8266 download failure: memory allocation failed, allocating 6400 bytes
     #Res.get('','index.html')
     
     from utils import Utils
     from webduino.config import Config
-    #Utils.save('https://marty5499.github.io/pythonCode/app/boot.py','boot.py')
+    Utils.save('https://marty5499.github.io/pythonCode/app/boot.py','boot.py')
     Config.load()
     if(not deviceId == ''):
         Config.data['devId'] = deviceId
