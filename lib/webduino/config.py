@@ -39,7 +39,7 @@ class Config:
         return Config.data
 
     def load(): 
-        defaultData = "webduino.io/KingKit_2.4G/////unknown/webduino/12345678/global/No"
+        defaultData = "KingKit_2.4G/webduino/////unknown/webduino/12345678/global/No"
         data = None
         try:
             file = open('value.js','r')
