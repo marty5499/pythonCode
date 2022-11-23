@@ -255,7 +255,7 @@ def install(deviceId=''):
     
     from utils import Utils
     from webduino.config import Config
-    Utils.save('https://marty5499.github.io/pythonCode/app/boot.py','boot.py')
+    Utils.save('https://marty5499.github.io/pythonCode/lib/webduino/boot.py','boot.py')
     Config.load()
     if(not deviceId == ''):
         Config.data['devId'] = deviceId

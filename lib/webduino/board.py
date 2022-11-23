@@ -5,17 +5,10 @@ from webduino.config import Config
 from webduino.webserver import WebServer
 import time, ubinascii, network, machine, os
 
-#####################
-try:
-    import cmd
-    machine.reset()
-except:
-    pass
-#####################
 
 class Board:
     
-    Ver = '0.2.0b'
+    Ver = '0.2.1b'
     def __init__(self,devId=''): 
         self.wifi = WiFi
         self.mqtt = MQTT
@@ -144,16 +137,17 @@ class Board:
             time.sleep(1)
             machine.reset()
 
-        # save 
+        # save https://xx.xx/test.py main.py 
         elif cmd == 'save':
             url = dataArgs[1]
             file = dataArgs[2]
             f = open('cmd.py','w')
-            f.write('import os,machine\r\n')
+            f.write('import os\r\n')
             f.write('os.remove("cmd.py")\r\n')
             f.write('from utils import *\r\n')
-            f.write('from webduino.board import Board\r\n')
-            f.write('Board()\r\n') # wifi connect()
+            f.write('from webduino.config import *\r\n')
+            f.write('cfg = Config.load()\r\n')
+            f.write("do_connect(cfg['ssid1'] , cfg['passwd1'])\r\n")
             f.write("Utils.save('"+url+"','"+file+"')\r\n")
             f.close()
             self.report('save')
