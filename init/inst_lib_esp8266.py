@@ -22,10 +22,11 @@ def do_connect():
 
 class Response:
 
-    def __init__(self, f):
+    def __init__(self, f, file=None):
         self.raw = f
         self.encoding = "utf-8"
         self._cached = None
+        self.file = file
 
     def close(self):
         if self.raw:
@@ -37,7 +38,21 @@ class Response:
     def content(self):
         if self._cached is None:
             try:
-                self._cached = self.raw.read()
+                if self.file is not None:
+                    defSize = 2048
+                    ba = bytearray(defSize)
+                    f = open(self.file,"w+")
+                    rSize = 0
+                    while True:
+                        readSize = self.raw.readinto(ba)
+                        f.write(ba,readSize)
+                        rSize = rSize + readSize
+                        if readSize < defSize:
+                            break
+                    f.close()
+                    self._cached = str(rSize)
+                else:
+                    self._cached = self.raw.read()
             finally:
                 self.raw.close()
                 self.raw = None
@@ -52,7 +67,7 @@ class Response:
         return ujson.loads(self.content)
 
 
-def request(method, url, data=None, json=None, headers={}, stream=None):
+def request(method, url, data=None, json=None, headers={}, stream=None, file=None):
     try:
         proto, dummy, host, path = url.split("/", 3)
     except ValueError:
@@ -119,7 +134,7 @@ def request(method, url, data=None, json=None, headers={}, stream=None):
         s.close()
         raise
 
-    resp = Response(s)
+    resp = Response(s, file=file)
     resp.status_code = status
     resp.reason = reason
     return resp
@@ -129,6 +144,9 @@ def head(url, **kw):
     return request("HEAD", url, **kw)
 
 def get(url, **kw):
+    return request("GET", url, **kw)
+
+def save(url, **kw):
     return request("GET", url, **kw)
 
 def post(url, **kw):
@@ -146,30 +164,11 @@ def delete(url, **kw):
 
 class Res:
 
-    def save(url,file):
+    def get(path,file):
         try:
-            response = get(url)
-            print(">>",len(response.text) )
-            print("get file:",file,'size:',len(response.text),',save to:',file)
-            f = open(file, 'w')
-            f.write(response.text)
-            f.close()
-            print("OK.")
-        except Exception as e:
-            print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-            print(e)
-            print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-        
-
-    def get(url,file):
-        try:
-            response = get('https://marty5499.github.io/pythonCode/'+url)
-            print(">>",len(response.text) )
-            print("get file:",file,'size:',len(response.text),',save to:',file)
-            f = open(file, 'w')
-            f.write(response.text)
-            f.close()
-            print("OK.")
+            response = save('https://marty5499.github.io/pythonCode/'+path,file=file)
+            print("get file:",file,'size:',response.text,',save to:',path)
+            print("OK:,mem:%d" % gc.mem_free())
         except Exception as e:
             print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
             print(e)
@@ -233,30 +232,32 @@ def install(deviceId=''):
     print("connect...")
     do_connect()
     print("get files...")
-    
+
     # 開源必備
     Res.exe('lib/urequests.py')
     Res.exe('lib/umqtt/simple.py')
     # Webduino 類別庫
     Res.exe('lib/webduino/led.py')
     Res.exe('lib/webduino/config.py')
-    #Res.exe('lib/webduino/gdriver.py')
-    #Res.exe('lib/webduino/camera.py')
+    Res.exe('lib/webduino/gdriver.py')
+    Res.exe('lib/webduino/camera.py')
     Res.exe('lib/webduino/board.py')
     Res.exe('lib/webduino/mqtt.py')
     Res.exe('lib/webduino/wifi.py')
     Res.exe('lib/webduino/webserver.py')
     Res.exe('lib/webduino/debug.py')
-    #Res.exe('lib/uyeelight.py') # save url to file
-    Res.exe('lib/utils.py') # save url to file
-    #Res.exe('lib/ssd1306.py') # save url to file
-    # ESP8266 download failure: memory allocation failed, allocating 6400 bytes
-    #Res.get('','index.html')
+    # 3rd wrapper
+    Res.exe('lib/uyeelight.py')
+    Res.exe('lib/utils.py')
+    Res.exe('lib/ssd1306.py')
+    # setting html
+    Res.get('','index.html')
     
     from utils import Utils
     from webduino.config import Config
     Utils.save('https://marty5499.github.io/pythonCode/init/boot.py','boot.py')
     Config.load()
+    
     if(not deviceId == ''):
         Config.data['devId'] = deviceId
     else:
@@ -272,4 +273,3 @@ def install(deviceId=''):
     print('Mac address:',ubinascii.hexlify(network.WLAN().config('mac'),':').decode())
 
 install(deviceId = board_device_id)
-
