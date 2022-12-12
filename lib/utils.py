@@ -20,10 +20,11 @@ def do_connect(ssid='webduino.io',pwd='webduino'):
 
 class Response:
 
-    def __init__(self, f):
+    def __init__(self, f, file=None):
         self.raw = f
         self.encoding = "utf-8"
         self._cached = None
+        self.file = file
 
     def close(self):
         if self.raw:
@@ -35,7 +36,21 @@ class Response:
     def content(self):
         if self._cached is None:
             try:
-                self._cached = self.raw.read()
+                if self.file is not None:
+                    defSize = 2048
+                    ba = bytearray(defSize)
+                    f = open(self.file,"w+")
+                    rSize = 0
+                    while True:
+                        readSize = self.raw.readinto(ba)
+                        f.write(ba,readSize)
+                        rSize = rSize + readSize
+                        if readSize < defSize:
+                            break
+                    f.close()
+                    self._cached = str(rSize)
+                else:
+                    self._cached = self.raw.read()
             finally:
                 self.raw.close()
                 self.raw = None
@@ -49,7 +64,8 @@ class Response:
         import ujson
         return ujson.loads(self.content)
 
-def request(method, url, data=None, json=None, headers={}, stream=None):
+
+def request(method, url, data=None, json=None, headers={}, stream=None, file=None):
     try:
         proto, dummy, host, path = url.split("/", 3)
     except ValueError:
@@ -116,13 +132,16 @@ def request(method, url, data=None, json=None, headers={}, stream=None):
         s.close()
         raise
 
-    resp = Response(s)
+    resp = Response(s, file=file)
     resp.status_code = status
     resp.reason = reason
     return resp
 
 
 class URL:
+    def save(url, **kw):
+        return request("GET", url, **kw)
+    
     def head(url, **kw):
         return request("HEAD", url, **kw)
 
@@ -146,11 +165,8 @@ class Utils:
 
     def save(url,file):
         try:
-            response = URL.get(url)
-            f = open(file, 'w')
-            size = f.write(response.text)
-            f.close()
-            print(url,'=>',file,' '+str(size))
+            response = URL.save(url,file=file)
+            print(url,'=>',file,' '+str(response.text))
         except Exception as e:
             print("download failure:",e)
 
