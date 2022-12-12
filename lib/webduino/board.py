@@ -4,11 +4,11 @@ from webduino.debug import debug
 from webduino.config import Config
 from webduino.webserver import WebServer
 import time, ubinascii, network, machine, os
-
+from machine import Timer
 
 class Board:
     
-    Ver = '0.2.1b'
+    Ver = '0.2.2b'
     def __init__(self,devId=''): 
         self.wifi = WiFi
         self.mqtt = MQTT
@@ -45,7 +45,7 @@ class Board:
         self.wifi.web = WebServer(self,80)
         self.wifi.web.listener()
         debug.print("webServer start...")
-        
+    
     def online(self,status):
         if status:
             self.mqtt.connect()
@@ -81,6 +81,10 @@ class Board:
 
     def pub(self,topic,msg):
         self.mqtt.pub(topic,msg)
+        
+    def start(self,checkTime=0.5):
+        self.chk = Timer(-1)
+        self.chk.init(period=int(checkTime*1000), mode=Timer.PERIODIC, callback=lambda t:self.check())
         
     def loop(self):
         debug.print("run...")

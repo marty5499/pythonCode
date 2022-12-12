@@ -1,6 +1,6 @@
 from TM1637 import TM1637
 from machine import Pin
-tm = TM1637(clk=Pin(5), dio=Pin(4))
+tm = TM1637(clk=Pin(4), dio=Pin(5))
 
 # all LEDS on "88:88"
 tm.write([127, 255, 127, 127])

@@ -256,6 +256,25 @@ def install(deviceId=''):
     Res.exe('lib/utils.py') # save url to file
     Res.get('','index.html')
     
+    # 傳感器
+    Res.exe('lib/adxl345.py') # save url to file
+    Res.exe('lib/hmc5883l.py') # save url to file
+    Res.exe('lib/mfrc522.py') # save url to file
+    Res.exe('lib/mlx90614.py') # save url to file
+    Res.exe('lib/RFBtn.py') # save url to file
+
+    Res.exe('lib/max7219.py') # save url to file
+    Res.exe('lib/ssd1306.py') # save url to file
+    Res.exe('lib/TM1637.py') # save url to file
+    Res.exe('lib/uyeelight.py') # save url to file
+
+    Res.exe('lib/dfplayer.py') # save url to file
+    Res.exe('lib/st7789py.py') # save url to file
+
+    # TTGO
+    Res.exe('lib/st7789.py') # save url to file
+    Res.exe('lib/sysfont.py') # save url to file
+
     from utils import Utils
     from webduino.config import Config
     #Utils.save('https://marty5499.github.io/pythonCode/app/boot.py','boot.py')

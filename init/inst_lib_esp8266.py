@@ -236,6 +236,7 @@ def install(deviceId=''):
     # 開源必備
     Res.exe('lib/urequests.py')
     Res.exe('lib/umqtt/simple.py')
+    
     # Webduino 類別庫
     Res.exe('lib/webduino/led.py')
     Res.exe('lib/webduino/config.py')
@@ -250,6 +251,16 @@ def install(deviceId=''):
     Res.exe('lib/uyeelight.py')
     Res.exe('lib/utils.py')
     Res.exe('lib/ssd1306.py')
+    Res.exe('lib/TM1637.py')
+    Res.exe('lib/mfrc522.py')
+    Res.exe('lib/mlx90614.py')
+    Res.exe('lib/max7219.py')
+    Res.exe('lib/hmc5883l.py')
+    Res.exe('lib/adxl345.py')
+    Res.exe('lib/RFBtn.py')
+    #
+    Res.exe('lib/scanplayer.py')
+    Res.exe('lib/dfplayer.py')
     # setting html
     Res.get('','index.html')
     
