@@ -258,6 +258,7 @@ def install(deviceId=''):
     Res.exe('lib/hmc5883l.py')
     Res.exe('lib/adxl345.py')
     Res.exe('lib/RFBtn.py')
+    Res.exe('lib/hcsr04.py')
     #
     Res.exe('lib/scanplayer.py')
     Res.exe('lib/dfplayer.py')
