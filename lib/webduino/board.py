@@ -82,8 +82,8 @@ class Board:
     def pub(self,topic,msg):
         self.mqtt.pub(topic,msg)
         
-    def start(self,checkTime=0.5):
-        self.chk = Timer(-1)
+    def start(self,checkTime=0.25):
+        self.chk = Timer(0)
         self.chk.init(period=int(checkTime*1000), mode=Timer.PERIODIC, callback=lambda t:self.check())
         
     def loop(self):
