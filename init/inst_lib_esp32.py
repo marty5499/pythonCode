@@ -8,26 +8,25 @@ def do_connect():
     sta_if = network.WLAN(network.STA_IF)
     sta_if.active(True)
     print('connecting to network...')
-    sta_if.disconnect()
-#    if(not sta_if.isconnected()):
-    sta_if.connect('KingKit_2.4G', 'webduino')
+    #sta_if.disconnect()
+    if(not sta_if.isconnected()):
+        sta_if.connect('KingKit_2.4G', 'webduino')
     cnt = 0
     while not sta_if.isconnected():
         cnt = cnt + 1
-        print("connect....."+str(cnt))
         time.sleep(0.5)
         if cnt == 60:
             break
-    print("connect!...wait config.")
     connected = sta_if.isconnected()
     print('network config:', sta_if.ifconfig())
 
 class Response:
 
-    def __init__(self, f):
+    def __init__(self, f, file=None):
         self.raw = f
         self.encoding = "utf-8"
         self._cached = None
+        self.file = file
 
     def close(self):
         if self.raw:
@@ -39,7 +38,21 @@ class Response:
     def content(self):
         if self._cached is None:
             try:
-                self._cached = self.raw.read()
+                if self.file is not None:
+                    defSize = 2048
+                    ba = bytearray(defSize)
+                    f = open(self.file,"w+")
+                    rSize = 0
+                    while True:
+                        readSize = self.raw.readinto(ba)
+                        f.write(ba,readSize)
+                        rSize = rSize + readSize
+                        if readSize < defSize:
+                            break
+                    f.close()
+                    self._cached = str(rSize)
+                else:
+                    self._cached = self.raw.read()
             finally:
                 self.raw.close()
                 self.raw = None
@@ -54,7 +67,7 @@ class Response:
         return ujson.loads(self.content)
 
 
-def request(method, url, data=None, json=None, headers={}, stream=None):
+def request(method, url, data=None, json=None, headers={}, stream=None, file=None):
     try:
         proto, dummy, host, path = url.split("/", 3)
     except ValueError:
@@ -121,7 +134,7 @@ def request(method, url, data=None, json=None, headers={}, stream=None):
         s.close()
         raise
 
-    resp = Response(s)
+    resp = Response(s, file=file)
     resp.status_code = status
     resp.reason = reason
     return resp
@@ -131,6 +144,9 @@ def head(url, **kw):
     return request("HEAD", url, **kw)
 
 def get(url, **kw):
+    return request("GET", url, **kw)
+
+def save(url, **kw):
     return request("GET", url, **kw)
 
 def post(url, **kw):
@@ -160,8 +176,7 @@ class Res:
         except Exception as e:
             print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
             print(e)
-            print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-        
+            print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")        
 
     def get(url,file):
         try:
@@ -269,7 +284,15 @@ def install(deviceId=''):
     Res.exe('lib/uyeelight.py') # save url to file
 
     Res.exe('lib/dfplayer.py') # save url to file
+    Res.exe('lib/dfplayermini.py') # save url to file
     Res.exe('lib/st7789py.py') # save url to file
+
+    # rotary
+    Res.exe('lib/rotary.py') # save url to file
+    Res.exe('lib/rotary_irq_esp.py') # save url to file
+
+    # ultrasonic
+    Res.exe('lib/hcsr04.py') # save url to file
 
     # TTGO
     Res.exe('lib/st7789.py') # save url to file

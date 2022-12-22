@@ -5,7 +5,7 @@ r = RotaryIRQ(pin_num_clk=0,
               pin_num_dt=2, 
               min_val=0, 
               max_val=5, 
-              reverse=False, 
+              reverse=True, 
               range_mode=RotaryIRQ.RANGE_WRAP)
               
 val_old = r.value()
