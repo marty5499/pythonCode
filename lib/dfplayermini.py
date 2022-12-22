@@ -12,8 +12,8 @@ class Player:
         self.uart.init(9600, bits=8, parity=None, stop=1)
         self.cmd(0x3F)  # send initialization parametres
         self._fadeout_timer = Timer(-1)
-        self._volume = 15
-        self._max_volume = 15
+        self._volume = 30
+        self._max_volume = 30
         self._fadeout_speed = 0
 
     def cmd(self, command, parameter=0x00):
