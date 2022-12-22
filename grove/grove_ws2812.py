@@ -1,6 +1,6 @@
 import machine, neopixel
 p = machine.Pin(2)
-n = neopixel.NeoPixel(p, 4)
-for i in range(4):
-    n[i] = (i * 20+10, i*2, 22)
+n = neopixel.NeoPixel(p, 16)
+for i in range(16):
+    n[i] = (i * 1, i*2, 2)
 n.write()
