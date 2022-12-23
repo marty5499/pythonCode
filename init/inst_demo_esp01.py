@@ -38,9 +38,8 @@ class Response:
     def content(self):
         if self._cached is None:
             try:
-                gc.collect()
                 if self.file is not None:
-                    defSize = 512
+                    defSize = 1024
                     ba = bytearray(defSize)
                     f = open(self.file,"w+")
                     rSize = 0
@@ -242,85 +241,33 @@ class Res:
         os.chdir('/')
 
 
-def install(deviceId=''):
+def install(deviceId='test'):
+    try:
+        os.mkdir('demo')
+    except:
+        pass
 
-    # WiFi Connect
     print("connect...")
     do_connect()
     print("get files...")
+    files = [
+        'demo_adxl345.py',
+        'demo_buzzer.py',
+        'demo_dht.py',
+        'demo_dfplayermini.py',
+        'demo_lcd1602.py',
+        'demo_rotary.py',
+        'demo_mlx90614.py',
+        'demo_ssd1306.py',
+        'demo_tm1637.py',
+        'demo_ultrasonic.py',
+        'demo_ws2812.py',
+        'demo_servo.py',
+        ]
 
+    for file in files:
+        Res.get('esp01/'+file,'demo/'+file)
 
-    # 開源必備
-    Res.exe('lib/urequests.py')
-    Res.exe('lib/umqtt/simple.py')
+    print("done.")
 
-    # 串接元件
-    Res.exe('lib/uyeelight.py')
-
-    # Webduino 類別庫
-    Res.exe('lib/webduino/led.py')
-    Res.exe('lib/webduino/config.py')
-    Res.exe('lib/webduino/gdriver.py')
-    #Res.exe('lib/webduino/camera.py')
-    Res.exe('lib/webduino/board.py')
-    Res.exe('lib/webduino/mqtt.py')
-    Res.exe('lib/webduino/wifi.py')
-    Res.exe('lib/webduino/webserver.py')
-    Res.exe('lib/webduino/debug.py')
-    Res.exe('lib/utils.py') # save url to file
-    Res.get('','index.html')
-    
-    # 傳感器
-    Res.exe('lib/adxl345.py') # save url to file
-    Res.exe('lib/hmc5883l.py') # save url to file
-    Res.exe('lib/mfrc522.py') # save url to file
-    Res.exe('lib/mlx90614.py') # save url to file
-    Res.exe('lib/RFBtn.py') # save url to file
-
-    Res.exe('lib/max7219.py') # save url to file
-    Res.exe('lib/ssd1306.py') # save url to file
-    Res.exe('lib/TM1637.py') # save url to file
-    Res.exe('lib/uyeelight.py') # save url to file
-
-    # mp3
-    Res.exe('lib/dfplayer.py') # save url to file
-    Res.exe('lib/dfplayermini.py') # save url to file
-
-    # rotary
-    Res.exe('lib/rotary.py') # save url to file
-    Res.exe('lib/rotary_irq_esp.py') # save url to file
-
-    # ultrasonic
-    Res.exe('lib/hcsr04.py') # save url to file
-
-    # LCD1602
-    Res.exe('lib/lcd_api.py')
-    Res.exe('lib/i2c_lcd.py') # save url to file
-
-    # TTGO
-    Res.exe('lib/st7789.py') # save url to file
-    Res.exe('lib/st7789py.py') # save url to file
-    Res.exe('lib/sysfont.py') # save url to file
-    
-    # ESP8266 download failure: memory allocation failed, allocating 6400 bytes
-    Res.get('','index.html')
-    
-    from utils import Utils
-    from webduino.config import Config
-    Utils.save('https://marty5499.github.io/pythonCode/init/boot.py','boot.py')
-    Config.load()
-    if(not deviceId == ''):
-        Config.data['devId'] = deviceId
-    else:
-        deviceId = Config.data['devId']
-        
-    if(not board_devSSID == ''):
-        Config.data['devSSID'] = board_devSSID
-        
-    print("-=-=-=-=-=-=-=-=-=-=-=-=-=-=-")
-    print("-    Device ID: ["+deviceId+"]    -")
-    Config.save()
-    print("-=-=-=-=-=-=-=-=-=-=-=-=-=-=-")
-    print('Mac address:',ubinascii.hexlify(network.WLAN().config('mac'),':').decode())
-
-install(deviceId = board_device_id)
+install()

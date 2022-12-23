@@ -230,7 +230,33 @@ def install(deviceId=''):
     # 開源必備
     Res.exe('lib/urequests.py')
     Res.exe('lib/umqtt/simple.py')
+
+    # 串接元件
+    Res.exe('lib/uyeelight.py')
     
+    # 傳感器
+    Res.exe('lib/adxl345.py') # save url to file
+    Res.exe('lib/hmc5883l.py') # save url to file
+    Res.exe('lib/mfrc522.py') # save url to file
+    Res.exe('lib/mlx90614.py') # save url to file
+    Res.exe('lib/RFBtn.py') # save url to file
+
+    Res.exe('lib/max7219.py') # save url to file
+    Res.exe('lib/ssd1306.py') # save url to file
+    Res.exe('lib/TM1637.py') # save url to file
+    Res.exe('lib/uyeelight.py') # save url to file
+
+    Res.exe('lib/dfplayer.py') # save url to file
+    Res.exe('lib/dfplayermini.py') # save url to file
+    Res.exe('lib/st7789py.py') # save url to file
+
+    # rotary
+    Res.exe('lib/rotary.py') # save url to file
+    Res.exe('lib/rotary_irq_esp.py') # save url to file
+
+    # ultrasonic
+    Res.exe('lib/hcsr04.py') # save url to file
+
     # Webduino 類別庫
     Res.exe('lib/webduino/led.py')
     Res.exe('lib/webduino/config.py')
