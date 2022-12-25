@@ -249,7 +249,7 @@ def install(deviceId='test'):
 
     print("connect...")
     do_connect()
-    print("get files...")
+    print("get demo files...")
     files = [
         'demo_adxl345.py',
         'demo_buzzer.py',
