@@ -1,5 +1,5 @@
-board_devSSID ='martyTest'
-board_device_id = 'martyTest'
+board_devSSID ='e12'
+board_device_id = board_devSSID
 
 import os, usocket, time, ubinascii, network, machine
 
@@ -236,34 +236,43 @@ def install(deviceId=''):
     # 開源必備
     Res.exe('lib/urequests.py')
     Res.exe('lib/umqtt/simple.py')
-    
+    # 小米燈泡
+    Res.exe('lib/uyeelight.py')
     # Webduino 類別庫
     Res.exe('lib/webduino/led.py')
     Res.exe('lib/webduino/config.py')
     Res.exe('lib/webduino/gdriver.py')
-    Res.exe('lib/webduino/camera.py')
+    #Res.exe('lib/webduino/camera.py')
     Res.exe('lib/webduino/board.py')
     Res.exe('lib/webduino/mqtt.py')
     Res.exe('lib/webduino/wifi.py')
     Res.exe('lib/webduino/webserver.py')
     Res.exe('lib/webduino/debug.py')
-    # 3rd wrapper
-    Res.exe('lib/uyeelight.py')
-    Res.exe('lib/utils.py')
-    Res.exe('lib/ssd1306.py')
-    Res.exe('lib/TM1637.py')
-    Res.exe('lib/mfrc522.py')
-    Res.exe('lib/mlx90614.py')
-    Res.exe('lib/max7219.py')
-    Res.exe('lib/hmc5883l.py')
-    Res.exe('lib/adxl345.py')
-    Res.exe('lib/RFBtn.py')
-    Res.exe('lib/hcsr04.py')
-    #
-    Res.exe('lib/scanplayer.py')
-    Res.exe('lib/dfplayer.py')
-    # setting html
+    Res.exe('lib/utils.py') # save url to file
     Res.get('','index.html')
+    # 傳感器
+    Res.exe('lib/adxl345.py') # save url to file
+    Res.exe('lib/hmc5883l.py') # save url to file
+    Res.exe('lib/mfrc522.py') # save url to file
+    Res.exe('lib/mlx90614.py') # save url to file
+    Res.exe('lib/RFBtn.py') # save url to file
+    Res.exe('lib/max7219.py') # save url to file
+    Res.exe('lib/ssd1306.py') # save url to file
+    Res.exe('lib/TM1637.py') # save url to file
+    Res.exe('lib/uyeelight.py') # save url to file
+    Res.exe('lib/dfplayer.py') # save url to file
+    Res.exe('lib/dfplayermini.py') # mp3
+    # rotary
+    Res.exe('lib/rotary.py')
+    Res.exe('lib/rotary_irq_esp.py')
+    Res.exe('lib/hcsr04.py') # ultrasonic
+    # LCD1602
+    Res.exe('lib/lcd_api.py')
+    Res.exe('lib/i2c_lcd.py') # save url to file
+    # TTGO
+    Res.exe('lib/st7789.py') # save url to file
+    Res.exe('lib/st7789py.py') # save url to file
+    Res.exe('lib/sysfont.py') # save url to file
     
     from utils import Utils
     from webduino.config import Config

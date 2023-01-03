@@ -14,7 +14,7 @@ class CamApp():
         data = {}
         data['sendTime'] = 5
         data['enableCron'] = False
-        data['folderId'] = '1c3fen96e5NFtzdRFMI1KnMc9XvqydjI9'
+        data['folderId'] = '1RPexLz2YOE2IzTYsYh-POMSKBHPZntcd'
         data['scriptId'] = 'AKfycbxboaMHyj3CRSHTDncHI2GXdUUbJfmbUXPmeGV8PsTOsikZHInkU_4ftVFMMs_G9Hk'
         return data
     
@@ -213,7 +213,7 @@ class CamApp():
             if CamApp.now % (5*60*10) == 0:
                 CamApp.board.mqtt.client.ping()
             # debug
-            if(CamApp.now%10==0):
+            if CamApp.now%10==0 and CamApp.enableCron == True:
                 print(CamApp.name+': cronState:'+str(CamApp.enableCron)+' , '+str(int(CamApp.now/10))+'/'+str(int(min/10)))
             # check upload
             if CamApp.enableCron and (CamApp.now == min or CamApp.now == 0):
@@ -246,7 +246,7 @@ except:
     pass
 #####################
 try:
-    CamApp.init(ledPin=4,deviceId='mycam02')
+    CamApp.init(ledPin=4,deviceId='cam03')
     CamApp.run(enableDeepSleepMode = 0) # 0 min: do not deepsleep
 except Exception as e:
     print(e)

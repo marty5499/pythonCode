@@ -327,13 +327,14 @@ def inst_library():
     Res.exe('lib/st7789py.py') # save url to file
     Res.exe('lib/sysfont.py') # save url to file
     
-    Res.get('','index.html')    
+    Res.get('','index.html')
 
 
 def install():
+    id = 'e19'
     do_connect()
     inst_library()
     download_demo()
-    setup_info(deviceId = 'e01' , board_devSSID = 'e01')
+    setup_info(deviceId = id , board_devSSID = id)
 
 install()

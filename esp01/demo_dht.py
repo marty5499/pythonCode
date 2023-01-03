@@ -1,5 +1,8 @@
 import dht , machine
+from machine import Pin
 
+pin0 = Pin(0,Pin.OUT)
+pin0.value(1)
 
 def dht11():
     dht11 = dht.DHT11(machine.Pin(2))
