@@ -304,6 +304,7 @@ def inst_library():
     Res.exe('lib/utils.py') # save url to file
     Res.get('','index.html')
     # 傳感器
+    Res.exe('lib/ahtx0.py') # 溫濕度
     Res.exe('lib/adxl345.py') # save url to file
     Res.exe('lib/hmc5883l.py') # save url to file
     Res.exe('lib/mfrc522.py') # save url to file
@@ -331,7 +332,7 @@ def inst_library():
 
 
 def install():
-    id = 'e19'
+    id = 'aa'
     do_connect()
     inst_library()
     download_demo()
