@@ -3,7 +3,7 @@ import machine, time
 
 try:
     time.sleep(1.5)
-    board = Board(devId='e06')
+    board = Board(devId='c01')
     board.start(checkTime=0.25)
 
     # mqtt sub

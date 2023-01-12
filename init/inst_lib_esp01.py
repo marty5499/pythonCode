@@ -248,11 +248,13 @@ def download_demo():
     print("get demo files...")
     files = [
         'demo_adxl345.py',
+        'demo_qmc5883.py',
         'demo_buzzer.py',
         'demo_dht.py',
         'demo_dfplayermini.py',
         'demo_lcd1602.py',
         'demo_rotary.py',
+        'demo_max7219.py',
         'demo_mlx90614.py',
         'demo_ssd1306.py',
         'demo_tm1637.py',
@@ -306,6 +308,7 @@ def inst_library():
     # 傳感器
     Res.exe('lib/adxl345.py') # save url to file
     Res.exe('lib/hmc5883l.py') # save url to file
+    Res.exe('lib/QMC5883.py') # save url to file
     Res.exe('lib/mfrc522.py') # save url to file
     Res.exe('lib/mlx90614.py') # save url to file
     Res.exe('lib/RFBtn.py') # save url to file
@@ -331,7 +334,7 @@ def inst_library():
 
 
 def install():
-    id = 'e19'
+    id = 'e03'
     do_connect()
     inst_library()
     download_demo()

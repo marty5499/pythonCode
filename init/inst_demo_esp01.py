@@ -252,11 +252,13 @@ def install(deviceId='test'):
     print("get demo files...")
     files = [
         'demo_adxl345.py',
+        'demo_qmc5883.py',
         'demo_buzzer.py',
         'demo_dht.py',
         'demo_dfplayermini.py',
         'demo_lcd1602.py',
         'demo_rotary.py',
+        'demo_max7219.py',
         'demo_mlx90614.py',
         'demo_ssd1306.py',
         'demo_tm1637.py',
