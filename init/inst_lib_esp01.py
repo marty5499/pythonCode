@@ -248,6 +248,7 @@ def download_demo():
     print("get demo files...")
     files = [
         'demo_adxl345.py',
+        'demo_aht10.py',
         'demo_qmc5883.py',
         'demo_buzzer.py',
         'demo_dht.py',

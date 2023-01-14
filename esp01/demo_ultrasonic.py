@@ -1,7 +1,7 @@
 from hcsr04 import HCSR04
 from time import sleep
 
-sensor = HCSR04(trigger_pin=0, echo_pin=2, echo_timeout_us=10000)
+sensor = HCSR04(trigger_pin=2, echo_pin=0, echo_timeout_us=10000)
 
 while True:
     distance = sensor.distance_cm()
