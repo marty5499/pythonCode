@@ -1,5 +1,6 @@
 import dht , machine
 from machine import Pin
+from time import sleep
 
 pin0 = Pin(0,Pin.OUT)
 pin0.value(1)
@@ -19,4 +20,7 @@ def dht22():
     print("temp:%s , humi:%s"%(temp,humi))
 
 
-dht22()
+for i in range(0,10):
+    #dht22()
+    dht11()
+    sleep(1)

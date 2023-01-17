@@ -253,6 +253,7 @@ def download_demo():
         'demo_buzzer.py',
         'demo_dht.py',
         'demo_dfplayermini.py',
+        'demo_ir_rx_nec.py',
         'demo_lcd1602.py',
         'demo_rotary.py',
         'demo_max7219.py',
@@ -315,6 +316,7 @@ def inst_library():
     Res.exe('lib/mlx90614.py') # save url to file
     Res.exe('lib/RFBtn.py') # save url to file
     Res.exe('lib/max7219.py') # save url to file
+    Res.exe('lib/ir_rx.py') # save url to file
     Res.exe('lib/ssd1306.py') # save url to file
     Res.exe('lib/TM1637.py') # save url to file
     Res.exe('lib/uyeelight.py') # save url to file
