@@ -338,7 +338,7 @@ def inst_library():
 
 
 def install():
-    id = 'S01'
+    id = 'e07'
     do_connect()
     inst_library()
     download_demo()
