@@ -1,10 +1,12 @@
 import network, ubinascii
 from umqtt.simple import MQTTClient
 from webduino.debug import debug
+import machine
 
 class MQTT:
     
     def connect(server = 'mqtt1.webduino.io',user ='webduino' ,pwd='webduino'):
+        MQTT.now = 0
         MQTT.server = server
         MQTT.user = user
         MQTT.pwd = pwd
@@ -33,5 +35,12 @@ class MQTT:
     def checkMsg():
         try:
             MQTT.client.check_msg()
+            MQTT.now += 1 
+            if MQTT.now % 60 == 0:
+                debug.print("MQTT ping")
+                MQTT.now = 0
+                MQTT.client.ping()
         except:
-            pass
+            debug.print("MQTT broken !")
+            machine.reset() 
+
