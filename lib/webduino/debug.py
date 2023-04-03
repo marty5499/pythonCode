@@ -1,5 +1,5 @@
 class debug:
-    state = True
+    state = False
     def on():
         debug.state = True
     def off():

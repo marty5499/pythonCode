@@ -1,5 +1,5 @@
-board_devSSID ='c01'
-board_device_id = 'c01'
+board_devSSID ='b01'
+board_device_id = 'b01'
 
 import os, usocket, time, ubinascii, network, machine
 

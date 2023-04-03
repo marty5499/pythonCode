@@ -8,7 +8,7 @@ from machine import Timer
 
 class Board:
     
-    Ver = '0.2.2b'
+    Ver = '0.2.3b'
     def __init__(self,devId=''): 
         self.wifi = WiFi
         self.mqtt = MQTT
@@ -68,13 +68,12 @@ class Board:
     def onTopic(self,topic,cbFunc):
         self.topics[topic] = cbFunc
         
-        
     def dispatch(self,topic,msg):
         topic = topic.decode("utf-8")
         msg = msg.decode("utf-8")
-        topic = topic.replace(self.devId+"/",'')
+        #_topic = topic.replace(self.devId+"/",'')
         debug.print("topic:"+topic+",msg:"+msg)
-        self.topics[topic](msg)
+        self.topics[topic](topic,msg)
     
     def publish(self,topic,msg):
         self.mqtt.pub(topic,msg)
