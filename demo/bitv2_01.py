@@ -1,23 +1,15 @@
-
+from webduino.webbit import WebBit
 import time
-from webbit import WebBit
-
+strong = 50
+colors = [(0, 0, strong), (strong, 0, 0), (0, strong, 0), (strong, strong, 0)] # 藍、紅、綠、黃色循環
+interval = 0.005 # 燈間隔速度
 wbit = WebBit()
-wbit.connect()
 
-def on_message(topic, msg):
-    if topic == 'bitv2/test':
-        if msg == 'red':
-            wbit.showAll(50, 0, 0)
-        elif msg == 'green':
-            wbit.showAll(0, 50, 0)
-        elif msg == 'blue':
-            wbit.showAll(0, 0, 50)
+def rainbow():
+    i = 0
+    while True:
+        wbit.show(i % 25, *colors[i // 25 % len(colors)]) # 控制webbit 25顆燈七彩流水燈方式呈現
+        time.sleep(interval)
+        i += 1
 
-wbit.sub('bitv2/test', on_message)
-
-while True:
-    wbit.checkMsg()
-    time.sleep(1)
-
-
+rainbow()
