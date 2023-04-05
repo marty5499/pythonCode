@@ -28,6 +28,7 @@ class MQTT:
         MQTT.callback = cb
         MQTT.client.set_callback(cb)
         MQTT.client.subscribe(topic)
+        debug.print("sub topic: %s"%topic)
         
     def set_last_will(topic, msg, retain=True, qos=1):
         MQTT.client.set_last_will(topic, retain, qos)
@@ -43,4 +44,3 @@ class MQTT:
         except:
             debug.print("MQTT broken !")
             machine.reset() 
-

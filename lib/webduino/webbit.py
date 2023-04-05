@@ -4,6 +4,8 @@ import os,machine,math
 from machine import ADC, I2C, Pin
 from neopixel import NeoPixel
 from webduino.board import Board
+from webduino.debug import debug
+import random,time
 
 class Temp():
     def __init__(self):
@@ -59,6 +61,7 @@ class Buzzer:
         self.queue = []
 
     def playOne(self, freq=300, duration=0.1):
+        if freq == 0: freq = 1
         pin17 = machine.PWM(machine.Pin(17), freq=freq, duty=512)
         if(duration>=10):
             duration = duration/1000.0
@@ -107,29 +110,39 @@ class WebBit:
         self.rL = ADC(Pin(13))
         self.lL.atten(ADC.ATTN_6DB)
         self.rL.atten(ADC.ATTN_6DB)
-        self.temp = Temp()
+        self._temp = Temp()
         self.showAll(0,0,0)
         self.beep()
+        self.debug = debug
+        self.online = False
 
     def sub(self,topic,cb):
+        self.connect()
         self.board.onTopic(topic,cb)
 
     def pub(self,topic,msg):
-        self.board.pub(topic,msg)
+        self.connect()
+        self.board.pub(topic,str(msg))
         
     def connect(self):
-        self.showAll(30,0,0)
+        if self.online == True: return
+        self.showAll(20,0,0)
         try:
             self.board = Board(devId='bitv2')
         except:
             machine.reset()
-        self.showAll(0,30,0)
+        self.showAll(0,0,0)
+        self.online = True
 
     def checkMsg(self):
+        self.connect()
         self.board.mqtt.checkMsg()
 
     def readTemp(self):
-        return self.temp.read()
+        return self._temp.read()
+
+    def temp(self):
+        return self._temp.read()
 
     def leftLight(self):
         return self.lL.read()
@@ -144,12 +157,18 @@ class WebBit:
         return self.rL.read()
 
     def btnA(self):
-        return self.a.isDown()
+        return self.a.btn.value() == 0
 
     def btnB(self):
-        return self.b.isDown()
+        return self.b.btn.value() == 0
 
     def play(self, *args):
+        self.buzzer.play(*args)
+        
+    def buzz(self, *args):
+        self.buzzer.play(*args)
+        
+    def tone(self, *args):
         self.buzzer.play(*args)
         
     def beep(self, *args):
@@ -175,3 +194,6 @@ class WebBit:
         b = int(b / 10)
         self.np[num] = (r,g,b)
         self.np.write()
+    
+    def sleep(self,i):
+        time.sleep(i)
