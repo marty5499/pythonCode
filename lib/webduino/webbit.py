@@ -195,5 +195,28 @@ class WebBit:
         self.np[num] = (r,g,b)
         self.np.write()
     
+    def matrix(self,r,g,b,data):
+        matrix = [[int(data[i*5 + j]) for j in range(5)] for i in range(5)]
+        reversed_matrix = [list(reversed(row)) for row in matrix]
+        transposed_matrix = [[reversed_matrix[j][i] for j in range(5)] for i in range(5)]
+        data = "".join(str(transposed_matrix[i][j]) for i in range(5) for j in range(5))
+        for i in range(len(data)):
+            if data[i] == '0':
+                self.show(i, 0, 0, 0)
+            elif data[i] == '1':
+                self.show(i, r, g, b)
+
+    def draw(self,data):
+        self.showAll(0,0,0)
+        for i in range(0, len(data), 8):
+            num = int(data[i:i+2],16) # 燈號
+            num = wled[num]
+            hex_color = data[i+2:i+8] # 顏色
+            r = int(hex_color[0:2], 16)
+            g = int(hex_color[2:4], 16)
+            b = int(hex_color[4:6], 16)
+            self.show(num, r, g, b)
+
     def sleep(self,i):
         time.sleep(i)
+
