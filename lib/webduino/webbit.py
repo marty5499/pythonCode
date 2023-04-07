@@ -114,6 +114,7 @@ class WebBit:
         self.showAll(0,0,0)
         self.beep()
         self.debug = debug
+        self.wled = {0:20,1:15,2:10,3:5,4:0,5:21,6:16,7:11,8:6,9:1,10:22,11:17,12:12,13:7,14:2,15:23,16:18,17:13,18:8,19:3,20:24,21:19,22:14,23:9,24:4}
         self.online = False
 
     def sub(self,topic,cb):
@@ -210,7 +211,7 @@ class WebBit:
         self.showAll(0,0,0)
         for i in range(0, len(data), 8):
             num = int(data[i:i+2],16) # 燈號
-            num = wled[num]
+            num = self.wled[num]
             hex_color = data[i+2:i+8] # 顏色
             r = int(hex_color[0:2], 16)
             g = int(hex_color[2:4], 16)
