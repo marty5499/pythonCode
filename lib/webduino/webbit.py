@@ -101,6 +101,12 @@ class Buzzer:
 
 class WebBit:
 
+    def close(self):
+        pass
+    
+    def disconnect(self):
+        pass
+    
     def __init__(self):
         self.np = neopixel.NeoPixel(machine.Pin(18), 25)
         self.buzzer = Buzzer()
@@ -189,10 +195,19 @@ class WebBit:
             self.np[led] = (r,g,b)
         self.np.write()
 
-    def show(self,num,r,g,b):    
-        r = int(r / 10)
-        g = int(g / 10)
-        b = int(b / 10)
+    def show(*args):
+        num_args = len(args)
+        self = args[0]
+        num = args[1]
+        r = args[2]
+        g = args[3]
+        b = args[4]
+        brightness = 1
+        if(num_args==6):
+            brightness = args[5]/100.0
+        r = int(r / 10 * brightness)
+        g = int(g / 10 * brightness)
+        b = int(b / 10 * brightness)
         self.np[num] = (r,g,b)
         self.np.write()
     
@@ -220,4 +235,3 @@ class WebBit:
 
     def sleep(self,i):
         time.sleep(i)
-
