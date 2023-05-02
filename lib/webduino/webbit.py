@@ -101,6 +101,12 @@ class Buzzer:
 
 class WebBit:
 
+    def close(self):
+        pass
+    
+    def disconnect(self):
+        pass
+    
     def __init__(self):
         self.np = neopixel.NeoPixel(machine.Pin(18), 25)
         self.buzzer = Buzzer()
@@ -114,6 +120,7 @@ class WebBit:
         self.showAll(0,0,0)
         self.beep()
         self.debug = debug
+        self.wled = {0:20,1:15,2:10,3:5,4:0,5:21,6:16,7:11,8:6,9:1,10:22,11:17,12:12,13:7,14:2,15:23,16:18,17:13,18:8,19:3,20:24,21:19,22:14,23:9,24:4}
         self.online = False
 
     def sub(self,topic,cb):
@@ -195,5 +202,27 @@ class WebBit:
         self.np[num] = (r,g,b)
         self.np.write()
     
+    def matrix(self,r,g,b,data):
+        matrix = [[int(data[i*5 + j]) for j in range(5)] for i in range(5)]
+        reversed_matrix = [list(reversed(row)) for row in matrix]
+        transposed_matrix = [[reversed_matrix[j][i] for j in range(5)] for i in range(5)]
+        data = "".join(str(transposed_matrix[i][j]) for i in range(5) for j in range(5))
+        for i in range(len(data)):
+            if data[i] == '0':
+                self.show(i, 0, 0, 0)
+            elif data[i] == '1':
+                self.show(i, r, g, b)
+
+    def draw(self,data):
+        self.showAll(0,0,0)
+        for i in range(0, len(data), 8):
+            num = int(data[i:i+2],16) # 燈號
+            num = self.wled[num]
+            hex_color = data[i+2:i+8] # 顏色
+            r = int(hex_color[0:2], 16)
+            g = int(hex_color[2:4], 16)
+            b = int(hex_color[4:6], 16)
+            self.show(num, r, g, b)
+
     def sleep(self,i):
         time.sleep(i)
