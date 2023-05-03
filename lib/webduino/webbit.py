@@ -63,6 +63,8 @@ class Buzzer:
     def playOne(self, freq=300, duration=0.1):
         if freq == 0: freq = 1
         pin17 = machine.PWM(machine.Pin(17), freq=freq, duty=512)
+        if(duration==-1):
+            return
         if(duration>=10):
             duration = duration/1000.0
         time.sleep(duration)
@@ -73,6 +75,7 @@ class Buzzer:
 
     def stop(self):
         self.queue = []
+        self.playOne(1,10)
 
     def run(self):
         while len(self.queue) > 0:
@@ -92,6 +95,8 @@ class Buzzer:
             for i in args:
                 self.queue.extend(args[0])
             print(self.queue)
+        elif len(args) == 1 and isinstance(args[0], int):
+            self.playOne(args[0],-1)
         elif len(args) == 2 and isinstance(args[0], int) and isinstance(args[1], (int, float)):
             # Input: freq, delay
             #print('2')
@@ -99,6 +104,15 @@ class Buzzer:
         self.run()
 
 
+class RGB:
+    def __init__(self,wbit,num):
+        self.num = num
+        self.wbit = wbit
+    def color(self,r,g,b):
+        self.wbit.show(self.num,r,g,b)
+    def off(self):
+        self.wbit.show(self.num,0,0,0)
+        
 class WebBit:
 
     def close(self):
@@ -106,6 +120,11 @@ class WebBit:
     
     def disconnect(self):
         pass
+    
+    def createRGB(self):
+        self.rgb = []
+        for i in range(25):
+            self.rgb.append(RGB(self,i))
     
     def __init__(self):
         self.np = neopixel.NeoPixel(machine.Pin(18), 25)
@@ -122,6 +141,7 @@ class WebBit:
         self.debug = debug
         self.wled = {0:20,1:15,2:10,3:5,4:0,5:21,6:16,7:11,8:6,9:1,10:22,11:17,12:12,13:7,14:2,15:23,16:18,17:13,18:8,19:3,20:24,21:19,22:14,23:9,24:4}
         self.online = False
+        self.createRGB()
 
     def sub(self,topic,cb):
         self.connect()
