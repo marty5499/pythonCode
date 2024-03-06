@@ -1,5 +1,5 @@
-board_devSSID ='b01'
-board_device_id = 'b01'
+board_devSSID ='bitv1'
+board_device_id = 'bitv1'
 
 import os, usocket, time, ubinascii, network, machine
 
@@ -263,6 +263,7 @@ def install(deviceId=''):
     Res.exe('lib/webduino/config.py')
     Res.exe('lib/webduino/gdriver.py')
     #Res.exe('lib/webduino/camera.py')
+    Res.exe('lib/webduino/webbitv1.py')
     Res.exe('lib/webduino/board.py')
     Res.exe('lib/webduino/mqtt.py')
     Res.exe('lib/webduino/wifi.py')

@@ -1,5 +1,5 @@
 import time
-from webduino.webbit import WebBit
+from webduino.webbitv1 import WebBit
 
 data = {
 "☺":"0000001010000001000101110",
@@ -65,6 +65,6 @@ data = {
 }
 
 wbit = WebBit()
-#wbit.matrix(50,50,0,data['☹'])
+wbit.matrix(50,50,0,data['☹'])
 #wbit.matrix(50,50,0,"1111110001101011000111111")
-wbit.draw("01ff000002ff000003ff000006ff000007ffcc0008ff00000bff00000cff00000dff00000f44ff441144ff441343ff441544ff441644ff441744ff44")
+#wbit.draw("01ff000002ff000003ff000006ff000007ffcc0008ff00000bff00000cff00000dff00000f44ff441144ff441343ff441544ff441644ff441744ff44")
