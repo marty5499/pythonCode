@@ -2,6 +2,7 @@ import machine,neopixel,time,dht,math
 from machine import ADC, I2C, Pin
 from webduino.board import Board
 from webduino.debug import debug
+from webduino.image import get_image
 
 class Temp():
     def __init__(self):
@@ -128,6 +129,9 @@ class WebBit:
         self.pinMap = {'0': 25, '1': 32, '2': 33, '3': 13, '4': 15, '5': 35, '6': 12, '7': 14,
                        '8': 16, '9': 17, '10': 26, '11': 27, '12': 2, '13': 18, '14': 19, '15': 23, '16': 5}
         self.d11 = False
+
+    def get_image(self,image):
+        return get_image(image)
 
     def adc(self):
         return self.p1_adc.read()
