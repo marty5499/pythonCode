@@ -1,5 +1,5 @@
 import time
-from webduino.webbitv1 import WebBit
+from webduino.webbit import WebBit
 
 # 初始化開發板
 wbit = WebBit()
