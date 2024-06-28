@@ -5,13 +5,12 @@ import machine
 
 class MQTT:
     
-    def connect(server = 'mqtt1.webduino.io',user ='webduino' ,pwd='webduino'):
+    def connect(user ='webduino' ,pwd='webduino'):
         MQTT.now = 0
-        MQTT.server = server
         MQTT.user = user
         MQTT.pwd = pwd
         mac = ubinascii.hexlify(network.WLAN().config('mac'),':').decode().replace(':','')
-        MQTT.client = MQTTClient('wa'+mac, server, user=user, password=pwd)
+        MQTT.client = MQTTClient('wa'+mac, MQTT.server, user=user, password=pwd)
         state = True if MQTT.client.connect() == 0 else False
         try:
             debug.print("resubscribe:",MQTT.subTopic)
@@ -43,4 +42,4 @@ class MQTT:
                 MQTT.client.ping()
         except:
             debug.print("MQTT broken !")
-            machine.reset() 
+            machine.reset()

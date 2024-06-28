@@ -8,10 +8,11 @@ from machine import Timer
 
 class Board:
     
-    Ver = '0.2.3b'
-    def __init__(self,devId=''): 
+    Ver = '0.2.3c'
+    def __init__(self,devId='',mqttServer='mqtt1.webduino.io'): 
         self.wifi = WiFi
         self.mqtt = MQTT
+        self.mqttServer = mqttServer
         self.wifi.onlilne(self.online)
         self.topics = {}
         self.topic_report = 'waboard/state'
@@ -48,6 +49,7 @@ class Board:
     
     def online(self,status):
         if status:
+            self.mqtt.server = self.mqttServer
             self.mqtt.connect()
             debug.print("connect mqtt...OK")
         else:
