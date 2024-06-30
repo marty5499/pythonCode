@@ -9,13 +9,14 @@ from machine import Timer
 class Board:
     
     Ver = '0.2.3c'
-    def __init__(self,devId='',mqttServer='mqtt1.webduino.io'): 
+    def __init__(self,devId='',mqttServer='mqtt1.webduino.io',topic_report='waboard/state',topic_report_msg='disconnect'): 
         self.wifi = WiFi
         self.mqtt = MQTT
         self.mqttServer = mqttServer
         self.wifi.onlilne(self.online)
         self.topics = {}
-        self.topic_report = 'waboard/state'
+        self.topic_report = topic_report
+        self.topic_report_msg = topic_report_msg
         self.config = Config
         self.now = 0
         json = self.config.load()
@@ -50,6 +51,8 @@ class Board:
     def online(self,status):
         if status:
             self.mqtt.server = self.mqttServer
+            self.mqtt.topic_report = self.topic_report
+            self.mqtt.topic_report_msg = self.topic_report_msg
             self.mqtt.connect()
             debug.print("connect mqtt...OK")
         else:
@@ -61,10 +64,10 @@ class Board:
             if self.wifi.connect(ssid,pwd):
                 break
         debug.print("WiFi Ready , MQTT Ready , ready to go...")
-        self.mqtt.sub(self.devId+"/#",self.dispatch)
-        self.mqtt.set_last_will(self.topic_report, 'disconnect', retain=True, qos=1)
-        self.onTopic('cmd',self.execCmd)
-        self.report('boot')
+        self.mqtt.sub(self.devId+"/#", self.dispatch)
+        if(self.topic_report == 'waboard/state'):
+            self.onTopic('cmd',self.execCmd)
+            self.report('boot')
         return self
         
     def onTopic(self,topic,cbFunc):

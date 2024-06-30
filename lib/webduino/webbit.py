@@ -6,6 +6,7 @@ from machine import ADC, Pin
 from webduino.board import Board
 from webduino.debug import debug
 from webduino.image import get_array
+from webduino.image import get_image_icon
 
 
 class Temp():
@@ -132,6 +133,8 @@ class WebBit:
 
     def __init__(self, devId=''):
         self.mqttServer = 'mqtt1.webduino.io'
+        self.topic_report = 'waboard/state'
+        self.topic_report_msg = 'disconnect'
         self.np = neopixel.NeoPixel(machine.Pin(18), 25)
         self.buzzer = Buzzer()
         self.a = Btn(38)
@@ -170,9 +173,9 @@ class WebBit:
     def connect(self):
         if self.online == True:
             return
-        self.showAll(20, 0, 0)
+        self.showAll(250, 10, 10)
         try:
-            self.board = Board(self.devId,self.mqttServer)
+            self.board = Board(self.devId, self.mqttServer, self.topic_report, self.topic_report_msg)
         except:
             machine.reset()
         self.showAll(0, 0, 0)
@@ -249,6 +252,8 @@ class WebBit:
         self.np.write()
 
     def matrix(self, r, g, b, data):
+        if(len(data) == 1):
+            data = get_image_icon(data)
         matrix = [[int(data[i*5 + j]) for j in range(5)] for i in range(5)]
         reversed_matrix = [list(reversed(row)) for row in matrix]
         transposed_matrix = [[reversed_matrix[j][i]

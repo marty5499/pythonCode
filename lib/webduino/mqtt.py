@@ -11,6 +11,8 @@ class MQTT:
         MQTT.pwd = pwd
         mac = ubinascii.hexlify(network.WLAN().config('mac'),':').decode().replace(':','')
         MQTT.client = MQTTClient('wa'+mac, MQTT.server, user=user, password=pwd)
+        print("set last_will...")
+        MQTT.set_last_will(MQTT.topic_report, MQTT.topic_report_msg)
         state = True if MQTT.client.connect() == 0 else False
         try:
             debug.print("resubscribe:",MQTT.subTopic)
@@ -30,7 +32,7 @@ class MQTT:
         debug.print("sub topic: %s"%topic)
         
     def set_last_will(topic, msg, retain=True, qos=1):
-        MQTT.client.set_last_will(topic, retain, qos)
+        MQTT.client.set_last_will(topic, msg, retain, qos)
 
     def checkMsg():
         try:
