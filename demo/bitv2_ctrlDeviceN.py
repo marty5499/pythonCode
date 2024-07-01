@@ -1,9 +1,13 @@
+# 韌體 lib 需更新 board.py , image.py , mqtt.py , webbit.py , hs300.py
 from webduino.webbit import WebBit
+from webduino.debug import debug
+from hs300 import HS300
 import ubinascii, time
 
 class CtrlDevice_8:
     
     def __init__(self, ssid, device_id, ports):
+        #debug.on()
         self.ssid = ssid
         self.device_id = device_id
         self.ports = ports
@@ -13,16 +17,26 @@ class CtrlDevice_8:
         self.wbit.topic_report = f"{self.device_id}/STATUS"
         self.wbit.topic_report_msg = ""
     
-    def get_initial_port_states(self):
+    def init_port_states(self):
         # 如果未取得狀態，預設所有 port 狀態都是 0
         self.state_str = self.load_config('ports',[0] * self.ports)
         return list(map(int, self.state_str))
+
+    def init_plugs_port(self):
+        self.hs300 = HS300(self.plugs_ip)
+        # 遍歷 self.state_str 並呼叫 set_smart_plugs
+        self.hs300.connect()
+        for index, state in enumerate(reversed(self.state_str)):
+            if(index > self.ports): break
+            print(f'hs300 ip[{self.plugs_ip}],switch {index + 1} state:{state}')
+            success = self.hs300.sw(index, int(state))
+        self.hs300.close()
 
     def load_config(self,key, defValue=''):
         self.wbit.board.config.load()
         val = self.wbit.board.config.get(key)
         if(val == None):
-            val = defVaule
+            val = defValue
         return val
 
     def save_config(self,key,value):
@@ -45,8 +59,11 @@ class CtrlDevice_8:
     def connect(self, qos=1):
         self.qos = qos
         self.wbit.connect()
-        self.cronSec = int(self.load_config('cronSec','10'))
-        self.port_states = self.get_initial_port_states()
+        self.cronSec = int(self.load_config('cronSec','30'))
+        self.port_states = self.init_port_states()
+        self.plugs_ip = self.load_config('plugs','192.168.0.4')
+        self.init_plugs_port()
+        print(f'set plugs_ip: {self.plugs_ip}')
         print(f"{self.device_id}/STATUS")
         self.wbit._sub_(f"{self.device_id}/PING", self.handle_message)
         self.publish(f"{self.device_id}/STATUS", "OK")
@@ -56,16 +73,23 @@ class CtrlDevice_8:
     def publish(self, topic, message):
         self.wbit._pub_(topic, message)
         print(f"out --> {message}")
+
+    def set_smart_plugs(self, port, state):
+        print(f'hs300 ip[{self.plugs_ip}],switch {port} state:{state}')
+        self.hs300 = HS300(self.plugs_ip)
+        self.hs300.connect()
+        success = self.hs300.sw(port, state)
+        self.hs300.close()
     
     def turn_on(self, port):
         self.port_states[port] = 1  # 更新對應的 port 狀態
-        #self.wbit.showAll(100, 0, 0)
+        self.set_smart_plugs(port,1)
         self.wbit.matrix(0,200,0,str(port+1))
         self.update_state_report()
     
     def turn_off(self, port):
         self.port_states[port] = 0  # 更新對應的 port 狀態
-        #self.wbit.showAll(0, 100, 0)
+        self.set_smart_plugs(port,0)
         self.wbit.matrix(200,0,0,str(port+1))
         self.update_state_report()
     
