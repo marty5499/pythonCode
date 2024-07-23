@@ -7,7 +7,8 @@ def do_connect():
     print('connecting to network...')
     #sta_if.disconnect()
     if(not sta_if.isconnected()):
-        sta_if.connect('KingKit_2.4G', 'webduino')
+        #sta_if.connect('KingKit_2.4G', 'webduino')
+        sta_if.connect('KingKit_MeetingRoom', 'webduino')
     cnt = 0
     while not sta_if.isconnected():
         cnt = cnt + 1

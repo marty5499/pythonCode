@@ -14,7 +14,7 @@ class Camera():
                 camera.init(0, format=camera.JPEG)
                 #camera.framesize(15)
                 #camera.quality(10)
-                #camera.framesize(camera.FRAME_UXGA)
+                camera.framesize(camera.FRAME_UXGA)
                 #time.sleep(0.1)
                 #Camera.initState = 1
             except:
@@ -25,11 +25,11 @@ class Camera():
             
     def snapshot():
         jpg = camera.capture()
-        image = ubinascii.b2a_base64(jpg)
-        del jpg
-        time.sleep(0.1)
-        gc.collect()
-        return image
+        #image = ubinascii.b2a_base64(jpg)
+        #del jpg
+        #time.sleep(0.1)
+        #gc.collect()
+        return jpg
 
     def capture():
         return camera.capture()

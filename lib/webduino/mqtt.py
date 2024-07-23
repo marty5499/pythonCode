@@ -42,6 +42,7 @@ class MQTT:
                 debug.print("MQTT ping")
                 MQTT.now = 0
                 MQTT.client.ping()
-        except:
-            debug.print("MQTT broken !")
+        except Exception as e:
+            print("MQTT checkMsg Err:",e)
+            #debug.print("MQTT broken !")
             machine.reset()
