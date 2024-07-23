@@ -6,12 +6,13 @@ import machine
 class MQTT:
     
     def connect(user ='webduino' ,pwd='webduino'):
+        debug.on()
         MQTT.now = 0
         MQTT.user = user
         MQTT.pwd = pwd
         mac = ubinascii.hexlify(network.WLAN().config('mac'),':').decode().replace(':','')
         MQTT.client = MQTTClient('wa'+mac, MQTT.server, user=user, password=pwd)
-        print("set last_will...")
+        debug.print("set last_will...")
         MQTT.set_last_will(MQTT.topic_report, MQTT.topic_report_msg)
         state = True if MQTT.client.connect() == 0 else False
         try:
@@ -43,6 +44,5 @@ class MQTT:
                 MQTT.now = 0
                 MQTT.client.ping()
         except Exception as e:
-            print("MQTT checkMsg Err:",e)
-            #debug.print("MQTT broken !")
+            debug.print("MQTT broken !")
             machine.reset()

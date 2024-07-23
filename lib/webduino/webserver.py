@@ -1,15 +1,18 @@
-import socket, time, machine
+import socket
+import time
+import machine
 
 class WebServer:  
     
-    def __init__(self,board,port=80):
+    def __init__(self, board, cam_app, port=80):
         self.addr = socket.getaddrinfo('0.0.0.0', port)[0][-1]
         self.ss = socket.socket()
         self.ss.bind(self.addr)
         self.ss.listen(1)
         self.board = board
+        self.cam_app = cam_app  # 將 cam_app 作為屬性存儲
 
-    def unquote(self,string):
+    def unquote(self, string):
         _hextobyte_cache = None
         if not string:
             return b''
@@ -35,80 +38,94 @@ class WebServer:
                 append(item)
         return b''.join(res)
  
-    def processPost(self,cs,req):
-        cs.send('HTTP/1.0 200 OK\r\nContent-type: text/html\r\n\r\n')
+    def processPost(self, cs, req):
+        cs.send(b'HTTP/1.0 200 OK\r\nContent-type: text/html\r\n\r\n')
         cl_file = req['stream']
         contentLen = req['Content-Length']
         urlPage = req['url'][1]
         formData = cl_file.read(contentLen)
-        if(urlPage == '/save'):
+        if urlPage == '/save':
             config = self.unquote(formData).decode("utf-8")[7:]
             self.board.config.updateFromString(config)
             self.board.config.save()
-            cs.send("<h1>Save OK, Restart...<h1>")
+            cs.send(b"<h1>Save OK, Restart...<h1>")
             cs.close()
             print("Restart...")
             time.sleep(2)
             machine.reset()
         cs.close() 
 
-    def processGet(self,cs,req):
-        #print("processGet...")
-        cs.sendall('HTTP/1.0 200 OK\r\nContent-type: text/html\r\n\r\n')        
+    def processGet(self, cs, req):
         try:
-            print("process:"+str(req['url']))
             filename = req['url'][1][1:]
-            if(filename=='favicon.ico'):
-                print("> no process:"+filename)
-                #raise Exception("no process",filename)
+            if filename == 'favicon.ico':
+                cs.close()
+                return
             if filename == '':
                 filename = 'index.html'
             if filename == 'value.js':
+                cs.sendall(b'HTTP/1.0 200 OK\r\nContent-type: application/javascript\r\n\r\n')
                 config = self.board.config.data
                 config['AP'] = self.board.ap()
                 config['IP'] = self.board.ip()
                 config['MAC'] = self.board.mac()
                 config['Ver'] = self.board.Ver
-                #print("resp:",str(config))
-                cs.send("var data="+str(config))
+                cs.sendall(("var data=" + str(config)).encode('utf-8'))
+            elif filename == 'image':
+                self.processImage(cs)
+            elif filename == 'stream':
+                self.processStream(cs)
             else:
-                #print("open file:"+filename)
-                file = open(filename, "r")
-                while True:
-                    line = file.readline()
-                    cs.sendall(line)
-                    if(line==""):
-                        break
-                file.close()         
+                cs.sendall(b'HTTP/1.0 200 OK\r\nContent-type: text/html\r\n\r\n')
+                with open(filename, "r") as file:
+                    while True:
+                        line = file.readline()
+                        if not line:
+                            break
+                        cs.sendall(line.encode('utf-8'))
         except Exception as e:
             print("Error: "+filename)
             print(e)
         cs.close()
 
-    def acceptSocket(self,sc):
-        #print("obj1:",sc)
+    def processImage(self, cs):
+        img = self.cam_app.cam.capture()  # Capture image from camera
+        cs.sendall(b'HTTP/1.0 200 OK\r\nContent-Type: image/jpeg\r\n\r\n')
+        cs.sendall(img)  # Send image binary data
+        cs.close()
+
+    def processStream(self, cs):
+        cs.sendall(b'HTTP/1.0 200 OK\r\nContent-Type: multipart/x-mixed-replace; boundary=frame\r\n\r\n')
+        try:
+            while True:
+                img = self.cam.capture()
+                cs.sendall(b'--frame\r\n')
+                cs.sendall(b'Content-Type: image/jpeg\r\n\r\n')
+                cs.sendall(img)
+                cs.sendall(b'\r\n')
+                time.sleep(0.1)  # Adjust the delay as needed
+        except Exception as e:
+            print("Streaming error:", e)
+        cs.close()
+
+    def acceptSocket(self, sc):
         cs, addr = self.ss.accept()
         req = {}
         contentLen = None
-        #print('client connected from', addr)
         cl_file = cs.makefile('rwb', 0)
         req['stream'] = cl_file
         while True: 
             line = cl_file.readline().decode("utf-8")
-            #print("line:",line)
             if not line or line == '\r\n':
                 break 
-            if len(line)>18 and str(line).find('Content-Length:')>=0:
-                #print("contentLen:",line)
-                req['Content-Length'] = int(line[16:])
-            if len(line)>4 and (line[0:5]=='GET /' or line[0:6]=='POST /'):
+            if 'Content-Length:' in line:
+                req['Content-Length'] = int(line.split(':')[1].strip())
+            if 'GET /' in line or 'POST /' in line:
                 req['url'] = line.split(' ')
-        #print("request:",req)
-        if(req['url'][0] == "POST"):
-            self.processPost(cs,req)
-            
-        elif(req['url'][0] == "GET"):
-            self.processGet(cs,req)        
+        if req.get('url', [])[0] == "POST":
+            self.processPost(cs, req)
+        elif req.get('url', [])[0] == "GET":
+            self.processGet(cs, req)        
 
     def listener(self):
         self.ss.setsockopt(socket.SOL_SOCKET, 20, self.acceptSocket)

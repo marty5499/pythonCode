@@ -6,10 +6,11 @@ from webduino.webserver import WebServer
 import time, ubinascii, network, machine, os
 from machine import Timer
 
-class Board:
+class Board: 
     
-    Ver = '0.2.3c'
-    def __init__(self,devId='',mqttServer='mqtt1.webduino.io',topic_report='waboard/state',topic_report_msg='disconnect'): 
+    Ver = '0.2.3d' 
+    def __init__(self,devId='',mqttServer='mqtt1.webduino.io',topic_report='waboard/state',topic_report_msg='disconnect'):
+        debug.on()
         self.wifi = WiFi
         self.mqtt = MQTT
         self.mqttServer = mqttServer
@@ -78,7 +79,8 @@ class Board:
         msg = msg.decode("utf-8")
         #_topic = topic.replace(self.devId+"/",'')
         debug.print("topic:"+topic+",msg:"+msg)
-        self.topics[topic](topic,msg)
+        if(topic in self.topics):
+            self.topics[topic](topic,msg)
     
     def publish(self,topic,msg):
         self.mqtt.pub(topic,msg)

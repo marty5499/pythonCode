@@ -2,8 +2,6 @@ from webduino.board import Board
 from webduino.config import JSONFile
 from webduino.led import LED
 from webduino.camera import Camera
-from webduino.gdriver import GDriver
-from webduino.filebrowser import FileBrowser
 
 from machine import WDT
 import ntptime,time, machine, urequests, gc, os, ubinascii, network
@@ -21,8 +19,6 @@ class CamApp():
     def init(ledPin=4,deviceId=''):
         CamApp.cfg = JSONFile('webeye.cfg',CamApp.getDefaultCfg())
         ##
-        GDriver.scriptURL = CamApp.cfg.get('scriptId')
-        GDriver.folderId = CamApp.cfg.get('folderId')
         CamApp.sendTime = CamApp.cfg.get('sendTime')
         CamApp.enableCron = CamApp.cfg.get('enableCron')
         ##
@@ -54,8 +50,6 @@ class CamApp():
         CamApp.board.onTopic("snapshot",CamApp.cmd_snapshot)
         CamApp.board.onTopic("capture",CamApp.cmd_capture)
         CamApp.board.onTopic("enableCron",CamApp.cmd_enableCron)
-        CamApp.board.onTopic("folderId",CamApp.cmd_folderId)
-        CamApp.board.onTopic("scriptURL",CamApp.cmd_scriptURL)
 
     #重新開機
     def cmd_reboot(args):
@@ -137,21 +131,6 @@ class CamApp():
         CamApp.board.publish(CamApp.name+'/state', 'setOK enableCron')
         CamApp.now = 0
             
-    # 雲端硬碟網址 folderId
-    def cmd_folderId(args):
-        GDriver.folderId = str(args).replace('?usp=sharing','')
-        CamApp.cfg.put('folderId',GDriver.folderId)
-        CamApp.cfg.save()
-        CamApp.board.publish(CamApp.name+'/state', 'setOK folderId')
-
-    # 雲端硬碟腳本網址 scriptURL
-    def cmd_scriptURL(args):
-        print("cmd_scriptURL:"+args)
-        GDriver.scriptURL = args
-        CamApp.cfg.put('scriptURL',GDriver.scriptURL)
-        CamApp.cfg.save()
-        CamApp.board.publish(CamApp.name+'/state', 'setOK scriptURL')
-
     def setRTC():
         print("set ntptime & rtc")
         ntptime.NTP_DELTA = ntptime.NTP_DELTA - 8*60*60
@@ -182,54 +161,25 @@ class CamApp():
         else:
             return MM+dd+"-"+hh+mm+ss
 
-    def snapshot_upload(pre):
-        CamApp.snaping = True
-        CamApp.board.publish((CamApp.name+'/state'), 'waiting')
-        gc.collect()
-        CamApp.board.publish((CamApp.name+'/state'), 'uploading')
-        filename = pre+CamApp.getTime()
-        print("upload...")
-        image = CamApp.cam.snapshot()
-        CamApp.board.publish((CamApp.name+'/img'), CamApp.cam.snapshot())
-        #redirectURL = GDriver.upload(CamApp.cam.snapshot(),filename)
-        gc.collect()
-        print("gc後記憶體：", gc.mem_free(), "字節")
-        #print("url:"+redirectURL)
-        #fileInfo=urequests.get(redirectURL)
-        #print("json:"+str(fileInfo.json()))
-        #CamApp.board.publish((CamApp.name+'/state'), 'upload '+str(fileInfo.json()))
-        CamApp.snaping = False
-
     def run(enableCron=True,enableDeepSleepMode=0):
-        CamApp.enableCron = enableCron
+        cnt = 0 
         print("run...")
-        CamApp.now = 0 #一開始先拍一張照片
         while True:
-            CamApp.now = 0 #一開始先拍一張照片
-            #CamApp.wdt.feed()
-            min = CamApp.sendTime * 60*10 #min
-            if CamApp.now % (5*60*10) == 0:
-                CamApp.board.mqtt.client.ping()
-            # debug
-            if CamApp.now%10==0 and CamApp.enableCron == True:
-                print(CamApp.name+': cronState:'+str(CamApp.enableCron)+' , '+str(int(CamApp.now/10))+'/'+str(int(min/10)))
-            # check upload
-            print('check upload:'+str(CamApp.now))
-            if CamApp.enableCron and (CamApp.now == min or CamApp.now == 0):
-                print("Trigger....")
-                CamApp.now = 0
-                try:
-                    #CamApp.board.wifi.checkConnection('')
-                    #CamApp.snapshot_upload('')
-                    CamApp.board.publish((CamApp.name+'/img'), CamApp.cam.capture())
-                    #直接重新開機
-                    #machine.reset()
-                except Exception as e:
-                    CamApp.snaping = False
-                    print("CamApp exception:",e)
+            try:
+                CamApp.board.check()
+                CamApp.board.publish((CamApp.name+'-stream'), CamApp.cam.capture())
+                #CamApp.board.publish((CamApp.name+'/img'), CamApp.cam.snapshot())
+                gc.collect()
+                print(str(cnt)+":"+ CamApp.name+"-stream free_mem:", gc.mem_free())
+                cnt = cnt + 1
+                #直接重新開機
+                #machine.reset()
+            except Exception as e:
+                CamApp.snaping = False
+                print("CamApp exception:",e)
+                CamApp.board.wifi.checkConnection('')
 
-            time.sleep(0.1)
-            CamApp.now = CamApp.now + 1
+            #time.sleep(0.2)
 
 
 #####################
@@ -240,10 +190,7 @@ except:
     pass
 #####################
 try:
-    CamApp.init(ledPin=4,deviceId='cam03')
-    #img = CamApp.cam.snapshot()
-    #print(len(img))
-    #CamApp.board.publish((CamApp.name+'/img'), img)
+    CamApp.init(ledPin=4,deviceId='webeye/cam03')
     CamApp.run(enableCron = True , enableDeepSleepMode = 0) # 0 min: do not deepsleep
 except Exception as e:
     print(e)
