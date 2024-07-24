@@ -6,7 +6,6 @@ import machine
 class MQTT:
     
     def connect(user ='webduino' ,pwd='webduino'):
-        debug.on()
         MQTT.now = 0
         MQTT.user = user
         MQTT.pwd = pwd

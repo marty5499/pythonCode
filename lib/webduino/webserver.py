@@ -1,6 +1,6 @@
 import socket
 import time
-import machine
+import machine,gc
 
 class WebServer:  
     
@@ -46,16 +46,18 @@ class WebServer:
         formData = cl_file.read(contentLen)
         if urlPage == '/save':
             config = self.unquote(formData).decode("utf-8")[7:]
+            print("save config:"+config)
             self.board.config.updateFromString(config)
             self.board.config.save()
-            cs.send(b"<h1>Save OK, Restart...<h1>")
+            cs.send(b"完成儲存，開發板將自動連上wifi")
             cs.close()
             print("Restart...")
-            time.sleep(2)
+            time.sleep(1)
             machine.reset()
         cs.close() 
 
     def processGet(self, cs, req):
+        print("processGet")
         try:
             filename = req['url'][1][1:]
             if filename == 'favicon.ico':
@@ -89,13 +91,18 @@ class WebServer:
         cs.close()
 
     def processImage(self, cs):
-        img = self.cam_app.cam.capture()  # Capture image from camera
-        cs.sendall(b'HTTP/1.0 200 OK\r\nContent-Type: image/jpeg\r\n\r\n')
+        img = self.cam.capture()  # Capture image from camera
+        cs.sendall(b'HTTP/1.0 200 OK\r\nContent-Type: image/jpeg\r\nAccess-Control-Allow-Origin: *\r\n\r\n')
         cs.sendall(img)  # Send image binary data
         cs.close()
+        gc.collect()
 
     def processStream(self, cs):
-        cs.sendall(b'HTTP/1.0 200 OK\r\nContent-Type: multipart/x-mixed-replace; boundary=frame\r\n\r\n')
+        #cs.sendall(b'HTTP/1.0 200 OK\r\nContent-Type: multipart/x-mixed-replace; boundary=frame\r\n\r\n')
+        cs.sendall(b'HTTP/1.0 200 OK\r\n')
+        cs.sendall(b'Content-Type: multipart/x-mixed-replace; boundary=frame\r\n')
+        cs.sendall(b'Access-Control-Allow-Origin: *\r\n\r\n')  # 添加這一行來設置CORS標頭
+
         try:
             while True:
                 img = self.cam.capture()
@@ -103,6 +110,7 @@ class WebServer:
                 cs.sendall(b'Content-Type: image/jpeg\r\n\r\n')
                 cs.sendall(img)
                 cs.sendall(b'\r\n')
+                gc.collect()
                 time.sleep(0.1)  # Adjust the delay as needed
         except Exception as e:
             print("Streaming error:", e)
@@ -122,7 +130,10 @@ class WebServer:
                 req['Content-Length'] = int(line.split(':')[1].strip())
             if 'GET /' in line or 'POST /' in line:
                 req['url'] = line.split(' ')
-        if req.get('url', [])[0] == "POST":
+        if(len(req.get('url', []))==0):
+            print("empty req , close socket")
+            cs.close()
+        elif req.get('url', [])[0] == "POST":
             self.processPost(cs, req)
         elif req.get('url', [])[0] == "GET":
             self.processGet(cs, req)        

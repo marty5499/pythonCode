@@ -5,7 +5,7 @@
         body, html { margin: 0; padding: 0; background: #222 }
         body * { box-sizing: border-box; margin: 0; padding: 10px; font-size: 16px; color: #ddd; text-align: center; font-style: normal; font-weight: 400; font-family: Arial, sans-serif }
         body>div { margin: 20px auto; width: calc(100% - 20px); max-width: 400px; padding: 20px 15px; background: #444; border-radius: 10px; border: 1px solid #666; border-radius: 3px }
-        .menu { display: inline-block; width: calc(33% - 4px); text-align: center; cursor: pointer; transition: .3s; border-radius: 3px }
+        .menu { display: inline-block; width: calc(25% - 4px); text-align: center; cursor: pointer; transition: .3s; border-radius: 3px }
         .menu:hover { background: #555 }
         .menu.select { background: #d00; color: #fff }
         .main { display: none; border-top: 1px dashed #566; border-bottom: 1px dashed #566; margin: 20px auto; padding: 10px 0 30px }
@@ -34,6 +34,7 @@
     <div>
         <a id="btnDevice" class="menu select">Device</a>
         <a id="btnWifi" class="menu">Wi-Fi</a>
+        <a id="btnStream" class="menu">Stream</a>
         <a id="btnInfo" class="menu">Info</a>
         <div id="areaDevice" class="main select">
             <i>Device ID</i>
@@ -57,6 +58,18 @@
             <h2>Wi-Fi No.2</h2><i>SSID</i><input id="w2Id"><i>PWD</i><input id="w2Pwd">
             <span style='display: none'><h2>Wi-Fi No.3</h2><i>SSID</i><input id="w3Id"><i>PWD</i><input id="w3Pwd"></span>
         </div>
+        <div id="areaStream" class="main">
+            <img src="/stream" width="320" height="240">
+            <h2>Resolution</h2>
+            <div id="resolutionGroup" class="checkbox">
+                <em id="res1">320 x 240</em>
+                <em id="res2">640 x 480</em>
+                <em id="res3">800 x 600</em>
+            </div>
+            <h2>Stream Option</h2>
+            <input type="range" id="streamOption" min="0" max="8" step="1" value="0">
+            <div id="streamOptionValue">Disable</div>
+        </div>
         <div id="areaInfo" class="main">
             <i>AP</i><b id="showAP"></b>
             <i>IP</i><b id="showIP"></b>
@@ -72,6 +85,10 @@
         const main = document.querySelectorAll(".main");
         const zoneMenu = document.querySelectorAll("#zone em");
         const openApMenu = document.querySelectorAll("#openAp em");
+        const resMenu = document.querySelectorAll("#resolutionGroup em");
+        const streamOptionSlider = document.getElementById("streamOption");
+        const streamOptionValue = document.getElementById("streamOptionValue");
+
         d.value = data.devSSID;
         e.value = data.devPasswd;
         w1Id.value = data.ssid1;
@@ -117,6 +134,9 @@
                 if (thisId.indexOf("Info") != -1) {
                     areaInfo.className = "main select";
                 }
+                if (thisId.indexOf("Stream") != -1) {
+                    areaStream.className = "main select";
+                }
             });
         });
         let zoneValue = data.zone;
@@ -157,6 +177,34 @@
                 self.className = "select";
             });
         });
+        let resValue = data.resolution;
+        resMenu.forEach((e) => {
+            let self = e;
+            if (self.id == resValue) {
+                self.className = "select";
+            } else {
+                self.className = "";
+            }
+        });
+        let streamValue = data.stream;
+        streamOptionSlider.value = streamValue;
+        const options = ["Disable", "Real-time", "1 second", "3 seconds", "5 seconds", "10 seconds", "15 seconds", "30 seconds", "60 seconds"];
+        streamOptionValue.textContent = options[streamValue];
+
+        resMenu.forEach((e) => {
+            let self = e;
+            self.addEventListener("click", () => {
+                resValue = self.id;
+                resMenu.forEach((f) => {
+                    f.className = "";
+                });
+                self.className = "select";
+            });
+        });
+        streamOptionSlider.addEventListener("input", () => {
+            streamValue = streamOptionSlider.value;
+            streamOptionValue.textContent = options[streamValue];
+        });
         submit.addEventListener("click", () => {
             submit.classList.add("sending");
             submit.textContent = "sending...";
@@ -181,7 +229,11 @@
                 "/" +
                 zoneValue +
                 "/" +
-                openApValue;
+                openApValue +
+                "/" +
+                resValue +
+                "/" +
+                streamValue;
 
             fetch("/save", {
                 method: "POST",

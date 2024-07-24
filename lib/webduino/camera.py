@@ -12,13 +12,13 @@ class Camera():
                 #camera.init(0, format=camera.JPEG,xclk_freq=camera.XCLK_20MHz)
                 #camera.init(0, format=camera.JPEG,xclk_freq=camera.XCLK_20MHz)
                 camera.init(0, format=camera.JPEG)
-                #camera.framesize(camera.FRAME_VGA)  #O
-                #camera.framesize(camera.FRAME_SVGA) #O
-                camera.framesize(camera.FRAME_XGA)  #O
-                #camera.framesize(12) X
-                #camera.framesize(camera.FRAME_HD) X
-                #camera.framesize(camera.FRAME_UXGA) X
-                #camera.framesize(camera.FRAME_HD) # 8:VGA , 10:640x480 , 12:1280x1024
+                if(Camera.resolution == 'res1'):
+                    camera.framesize(camera.FRAME_QVGA)     # 320 x 240
+                elif(Camera.resolution == 'res2'):
+                    camera.framesize(camera.FRAME_VGA)      # 640 x 480
+                elif(Camera.resolution == 'res3'):
+                    camera.framesize(camera.FRAME_SVGA)     # 800 x 600           
+                #camera.framesize(camera.FRAME_XGA)  #O
                 #camera.quality(10)
                 #time.sleep(0.1)
                 #Camera.initState = 1
@@ -27,6 +27,8 @@ class Camera():
                 Camera.initState = -1
                 machine.reset()
                 pass
+            
+
  
     def snapshot():
         jpg = camera.capture()

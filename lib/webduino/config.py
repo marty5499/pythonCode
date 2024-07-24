@@ -25,21 +25,25 @@ class Config:
 
     def updateFromString(data): 
         data = data.split('/')
+        print(data)
         Config.data['ssid1'] = data[0]
         Config.data['passwd1'] = data[1]
         Config.data['ssid2'] = data[2]
         Config.data['passwd2'] = data[3]
         Config.data['ssid3'] = data[4]
         Config.data['passwd3'] = data[5]
+        
         Config.data['devId'] = data[6]
         Config.data['devSSID'] = data[7]
         Config.data['devPasswd'] = data[8]
         Config.data['zone'] = data[9]
         Config.data['openAp'] = data[10]
+        Config.data['resolution'] = data[11]
+        Config.data['stream'] = data[12]
         return Config.data
 
     def load(): 
-        defaultData = "KingKit_2.4G/webduino/////unknown/webduino/12345678/global/No"
+        defaultData = "KingKit_2.4G/webduino/////INTJ/cam03/12345678/global/Yes/res3/0"
         data = None
         try:
             file = open('value.js','r')
@@ -49,6 +53,9 @@ class Config:
         except:
             Config.updateFromString(defaultData)
             Config.save()
+        # for test
+        #Config.updateFromString(defaultData)
+        #Config.save()
         return Config.data
 
     def save():

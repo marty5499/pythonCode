@@ -1,16 +1,15 @@
 from webduino.wifi import WiFi
 from webduino.mqtt import MQTT
-from webduino.debug import debug
 from webduino.config import Config
+from webduino.debug import debug
 from webduino.webserver import WebServer
 import time, ubinascii, network, machine, os
 from machine import Timer
 
 class Board: 
     
-    Ver = '0.2.3d' 
+    Ver = '0.2.3e' 
     def __init__(self,devId='',mqttServer='mqtt1.webduino.io',topic_report='waboard/state',topic_report_msg='disconnect'):
-        debug.on()
         self.wifi = WiFi
         self.mqtt = MQTT
         self.mqttServer = mqttServer
