@@ -8,7 +8,7 @@ from machine import Timer
 
 class Board: 
     
-    Ver = '0.2.3e' 
+    Ver = '0.2.4' 
     def __init__(self,devId='',mqttServer='mqtt1.webduino.io',topic_report='waboard/state',topic_report_msg='disconnect'):
         self.wifi = WiFi
         self.mqtt = MQTT
