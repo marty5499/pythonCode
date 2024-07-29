@@ -29,6 +29,8 @@ class Board:
         self.topic_cmd = self.devId+'/cmd'
         self.enableAP()
         self.connect(ssid=json['ssid1'],pwd=json['passwd1'])
+        apName = self.config.data['devSSID']+'_'+self.ip()
+        self.wifi.ap.config(essid=apName,password=self.config.data['devPasswd'],authmode=3)
         debug.print('board IP:'+self.ip())
 
     def ap(self):
