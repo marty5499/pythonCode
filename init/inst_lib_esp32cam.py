@@ -7,7 +7,7 @@ def do_connect():
     print('connecting to network...')
     #sta_if.disconnect()
     if(not sta_if.isconnected()):
-        sta_if.connect('KingKit_2.4G', 'webduino')
+        sta_if.connect('KingKit_MeetingRoom', 'webduino')
     cnt = 0
     while not sta_if.isconnected():
         cnt = cnt + 1
@@ -231,6 +231,34 @@ def install(deviceId=''):
     Res.exe('lib/urequests.py')
     Res.exe('lib/umqtt/simple.py')
 
+
+    # 串接元件
+    Res.exe('lib/uyeelight.py')
+    
+    # 傳感器
+    Res.exe('lib/adxl345.py') # save url to file
+    Res.exe('lib/hmc5883l.py') # save url to file
+    Res.exe('lib/mfrc522.py') # save url to file
+    Res.exe('lib/mlx90614.py') # save url to file
+    Res.exe('lib/RFBtn.py') # save url to file
+
+    Res.exe('lib/max7219.py') # save url to file
+    Res.exe('lib/ssd1306.py') # save url to file
+    Res.exe('lib/TM1637.py') # save url to file
+    Res.exe('lib/uyeelight.py') # save url to file
+
+    Res.exe('lib/dfplayer.py') # save url to file
+    Res.exe('lib/dfplayermini.py') # save url to file
+    Res.exe('lib/st7789py.py') # save url to file
+
+    # rotary
+    Res.exe('lib/rotary.py') # save url to file
+    Res.exe('lib/rotary_irq_esp.py') # save url to file
+
+    # ultrasonic
+    Res.exe('lib/hcsr04.py') # save url to file
+
+
     # Webduino 類別庫
     Res.exe('lib/webduino/led.py')
     Res.exe('lib/webduino/config.py')
@@ -243,10 +271,10 @@ def install(deviceId=''):
     Res.exe('lib/webduino/filebrowser.py')
     Res.exe('lib/webduino/debug.py')
     Res.exe('lib/utils.py') # save url to file
-    Res.get('','index.html')
     
     from utils import Utils
-    Utils.save('https://marty5499.github.io/pythonCode/app/CamApp.py','main.py')
+    Utils.save('https://marty5499.github.io/pythonCode/app/esp32cam/CamApp.py_0724.py','main.py')
+    Utils.save('https://marty5499.github.io/pythonCode/app/esp32cam/index.html','index.html')
     
     from webduino.config import Config
     print("-=-=-=-=-=-=-=-=-=-=-=-=-=-=-")
@@ -259,4 +287,4 @@ def install(deviceId=''):
     print('Mac address:',ubinascii.hexlify(network.WLAN().config('mac'),':').decode())
 
 #install(deviceId = 'marty') # force setting deviceId
-install(deviceId = 'marty')
+install(deviceId = 'JjBE7')
