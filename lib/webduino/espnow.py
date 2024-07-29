@@ -1,31 +1,92 @@
 import espnow, ubinascii, network
+import machine, time
 
 class ESPNow:
-    def __init__(self,peer_str):
-        self.e = None
-        self.peer_mac = None
+    def __init__(self, peer_str = None):
         sta = network.WLAN(network.STA_IF)
         sta.active(True)
-        self.e = espnow.ESPNow()
+        self.e = espnow.ESPNow() 
         self.e.active(True)
-        peer_hex = ''.join('{:02x}'.format(ord(char)) for char in peer_str)
-        peer_mac = ubinascii.unhexlify(peer_hex)
-        if len(peer_mac) != 6:
-            raise ValueError("ESPNow: bytes or bytearray wrong length")
-        formatted_hex = ''.join(f'\\x{peer_hex[i:i+2]}' for i in range(0, len(peer_hex), 2))
-        print(f"{peer_str}:{formatted_hex}")
-        self.peer_mac = peer_mac
+        if not peer_str == None:
+            peer_hex = ''.join('{:02x}'.format(ord(char)) for char in peer_str)
+            peer_mac = ubinascii.unhexlify(peer_hex)
+            if len(peer_mac) != 6:
+                raise ValueError("ESPNow: bytes or bytearray wrong length")
+            formatted_hex = ''.join(f'\\x{peer_hex[i:i+2]}' for i in range(0, len(peer_hex), 2))
+            print(f"{peer_str}:{formatted_hex}")
+            self.peer_mac = peer_mac
+        else:
+            print("esp01")
+            #self.peer_mac = b'\xff\xff\xff\xff\xff\xff'
+            #self.peer_mac = b'\x5c\xcf\x7f\x68\xe2\xce'
+            self.peer_mac = b'\x18\xfe\x34\xd7\x86\x93'
         self.e.add_peer(self.peer_mac)
+        self.file_buffer = {}
 
     def send(self, message):
         if self.peer_mac:
-            self.e.send(self.peer_mac, message.encode())
-            print(f"Message '{message}' sent to {self.peer_mac}")
+            self.e.send(self.peer_mac, message)
+            print(ubinascii.hexlify(self.peer_mac).decode())
         else:
             print("No peer joined. Please join a peer first.")
 
-    def recv(self, callback):
-        self.e.on_recv(callback)
+    def recv(self, callback=None):
+        def internal_recv_callback(e):
+            peer, msg = e.recv()
+            #print(f"{msg[0]:02x},{msg[1]:02x}")
+            if len(msg) == 2 and msg[0] == 0xf4 and msg[1] == 0xff:
+                machine.reset()
+            elif len(msg) > 4 and msg[0] == 0xf4 and msg[1] == 0x10:
+                # 这是内部控制指令（接收文件）
+                chunk_size = msg[2]
+                total_length = int.from_bytes(msg[3:7], 'big')
+                end_of_filename = msg.find(b'\n', 7)
+                filename = msg[7:end_of_filename].decode()
+                start_byte = int.from_bytes(msg[end_of_filename + 1:end_of_filename + 3], 'big')
+                file_data = msg[end_of_filename + 3:]
 
-    def irq(self, callback):
-        self.e.irq(callback)
+                if filename not in self.file_buffer:
+                    self.file_buffer[filename] = bytearray(total_length)
+
+                self.file_buffer[filename][start_byte:start_byte + len(file_data)] = file_data
+                # 檢查是否所有區塊都已接收
+                if total_length == (start_byte+len(file_data)):
+                    # 文件已完整，寫入文件
+                    with open(filename, 'wb') as f:
+                        f.write(self.file_buffer[filename])
+                    print("File "+filename+" written successfully")
+
+            else:
+                # 非内部控制指令，调用用户提供的回调
+                print("callback")
+                if callback is not None:
+                    callback(peer, msg)
+
+        self.e.on_recv(internal_recv_callback)
+
+    def sendFile(self, file_path, target_file, chunk_size, callback=None):
+        with open(file_path, 'rb') as f:
+            file_content = f.read()
+
+        total_length = len(file_content)
+        total_chunks = (total_length + chunk_size - 1) // chunk_size
+        for chunk_index in range(total_chunks):
+            start_byte = chunk_index * chunk_size
+            end_byte = min(start_byte + chunk_size, total_length)
+            chunk_data = file_content[start_byte:end_byte]
+
+            message = bytearray([0xf4, 0x10])
+            message.append(chunk_size)  # 這邊加入此次傳送的 chunk_size
+            message.extend(total_length.to_bytes(4, 'big'))  # 修正這裡，傳送總長度
+            message.extend(target_file.encode() + b'\n')
+            message.extend(start_byte.to_bytes(2, 'big'))
+            message.extend(chunk_data)
+            self.send(message)
+            if callback is not None:
+                callback(str(start_byte))
+
+
+    def cmd_reset(self):
+        message = bytearray([0xf4, 0xff])
+        self.send(message)
+        print("Reset command sent")
