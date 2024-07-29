@@ -273,7 +273,7 @@ def install(deviceId=''):
     Res.exe('lib/utils.py') # save url to file
     
     from utils import Utils
-    Utils.save('https://marty5499.github.io/pythonCode/app/esp32cam/CamApp.py_0724.py','main.py')
+    Utils.save('https://marty5499.github.io/pythonCode/app/esp32cam/CamApp_0724.py','main.py')
     Utils.save('https://marty5499.github.io/pythonCode/app/esp32cam/index.html','index.html')
     
     from webduino.config import Config

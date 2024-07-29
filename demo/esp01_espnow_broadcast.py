@@ -1,36 +1,24 @@
-import time, espnow, time, ubinascii, network, machine
 from machine import Pin
+import time, espnow, ubinascii, network, machine, urandom
+
+# 获取并显示 MAC 地址
+mac = network.WLAN().config('mac')
+mac_str = ubinascii.hexlify(mac, ':').decode()
+print("MAC Address:", mac_str)
+
+def init_espnow():
+    global e
+    sta = network.WLAN(network.STA_IF)
+    sta.active(True)
+    e = espnow.ESPNow()
+    e.active(True)
+    e.add_peer(b'\xff\xff\xff\xff\xff\xff')
+    print("init espnow ok")
 
 
+def generate_random_number():
+    return ''.join([str(urandom.getrandbits(4) % 10) for _ in range(10)])
 
-time.sleep(1.5)
-
-led = Pin(1,Pin.OUT)
-led.value(0)
-mac = ubinascii.hexlify(network.WLAN().config('mac'),':').decode()
-
-def wifi_reset():   # Reset wifi to AP_IF off, STA_IF on and disconnected
-  sta = network.WLAN(network.STA_IF); sta.active(False)
-  ap = network.WLAN(network.AP_IF); ap.active(False)
-  sta.active(True)
-  while not sta.active():
-      time.sleep(0.1)
-  sta.disconnect()   # For ESP8266
-  while sta.isconnected():
-      time.sleep(0.1)
-  return sta, ap
-
-sta, ap = wifi_reset()   # Reset wifi to AP off, STA on and disconnected
-peer = b'\xff\xff\xff\xff\xff\xff'  # MAC address of proxy
-e = espnow.ESPNow(); e.active(True);
-#e.add_peer(peer)
-
-def send(state):
-    e.send(peer, mac)
-    led.value(state)
-    time.sleep(1)
-
-while True:
-    send(0)
-    send(1)
-
+init_espnow()
+e.send(b'\xff\xff\xff\xff\xff\xff', generate_random_number())
+print("1 send...")

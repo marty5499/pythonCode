@@ -40,7 +40,3 @@ while True:
     time.sleep(0.25)
     setLED(0,0,1)
     e.send(rmac, 'blue')
-
-
-
-
