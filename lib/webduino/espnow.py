@@ -28,17 +28,32 @@ class ESPNow:
         self.e.send(self.peer_mac, message)
         #print("mac:"+ubinascii.hexlify(self.peer_mac).decode())
 
+
+
     def recv(self, callback=None):
-        def internal_recv_callback(e):
-            peer, msg = e.recv()
-            #print(f"{msg[0]:02x},{msg[1]:02x}")
+        def bytearray_find(haystack, needle, start=0):
+            needle_len = len(needle)
+            for i in range(start, len(haystack) - needle_len + 1):
+                if haystack[i:i + needle_len] == needle:
+                    return i
+            return -1        
+        def internal_recv_callback(*args):
+            if len(args) ==1:
+                code = 1 # nonuse
+                peer, msg = args[0].recv()
+            else:
+                code = args[0]
+                peer, msg = args[1]
+            peer_str = ''.join(f'{byte:02x}' for byte in peer)
+            print(f"src[{peer_str}] cmd: {msg[0]:02x},{msg[1]:02x}")
+            #"""
             if len(msg) == 2 and msg[0] == 0xf4 and msg[1] == 0xff:
                 machine.reset()
             elif len(msg) > 4 and msg[0] == 0xf4 and msg[1] == 0x10:
                 # 这是内部控制指令（接收文件）
                 chunk_size = msg[2]
                 total_length = int.from_bytes(msg[3:7], 'big')
-                end_of_filename = msg.find(b'\n', 7)
+                end_of_filename = bytearray_find(msg, b'\n', 7)
                 filename = msg[7:end_of_filename].decode()
                 start_byte = int.from_bytes(msg[end_of_filename + 1:end_of_filename + 3], 'big')
                 file_data = msg[end_of_filename + 3:]
@@ -47,18 +62,21 @@ class ESPNow:
                     self.file_buffer[filename] = bytearray(total_length)
 
                 self.file_buffer[filename][start_byte:start_byte + len(file_data)] = file_data
-                # 檢查是否所有區塊都已接收
-                if total_length == (start_byte+len(file_data)):
-                    # 文件已完整，寫入文件
+                
+                # 检查是否所有区块都已接收
+                if total_length == (start_byte + len(file_data)):
+                    # 文件已完整，写入文件
                     with open(filename, 'wb') as f:
                         f.write(self.file_buffer[filename])
-                    print("File "+filename+" written successfully")
+                    print("File " + filename + " written successfully")
+                    time.sleep(2)
+                    machine.reset()
 
             else:
                 # 非内部控制指令，调用用户提供的回调
                 if callback is not None:
                     callback(peer, msg)
-        
+            #"""
         self.e.irq(internal_recv_callback)
 
     def sendFile(self, file_path, target_file, chunk_size, callback=None):
