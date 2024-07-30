@@ -16,6 +16,10 @@ class ESPNow:
         self.e.send(self.peer_mac, message)
         #print("Sent to " + str(self.peer_mac))
 
+    def broadcast(self, message):
+        self.e.send(b'\xff\xff\xff\xff\xff\xff', message)
+        #print("Sent to " + str(self.peer_mac))
+
     def irecv(self, recvTime):
         peer, msg = self.e.irecv(int(recvTime * 1000))
         if not msg == None:
