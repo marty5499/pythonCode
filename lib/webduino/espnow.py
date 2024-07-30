@@ -10,13 +10,15 @@ class ESPNow:
         if not peer_str == None:
             if isinstance(peer_str, bytes):
                 self.peer_mac = peer_str
+                hex_string = ''.join(f'{byte:02x}' for byte in peer_str)
+                print(f"join {peer_str}:{hex_string}")
             else:
                 peer_hex = ''.join('{:02x}'.format(ord(char)) for char in peer_str)
                 peer_mac = ubinascii.unhexlify(peer_hex)
                 if len(peer_mac) != 6:
                     raise ValueError("ESPNow: bytes or bytearray wrong length")
                 formatted_hex = ''.join(f'\\x{peer_hex[i:i+2]}' for i in range(0, len(peer_hex), 2))
-                #print(f"{peer_str}:{formatted_hex}")
+                print(f"join {peer_str}:{formatted_hex}")
                 self.peer_mac = peer_mac
         else:
             print("broadcast node")
@@ -79,7 +81,7 @@ class ESPNow:
             else:
                 # 非内部控制指令，调用用户提供的回调
                 if callback is not None:
-                    callback(peer, msg)
+                    callback(peer, msg, self.e.peers_table)
             #"""
         self.e.irq(internal_recv_callback)
 
@@ -102,7 +104,7 @@ class ESPNow:
             message.extend(chunk_data)
             self.send(message)
             if callback is not None:
-                callback(self.peer_mac,str(start_byte).encode())
+                callback(self.peer_mac , str(start_byte).encode() , self.e.peers_table)
 
 
     def cmd_reset(self):
