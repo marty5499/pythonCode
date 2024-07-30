@@ -11,7 +11,7 @@ class Temp():
         self.B = 3950
         self.T0 = 273.15
         self.R1 = 2500   # 更改 R1 的值，根據傳感器上的參考電阻的規格表
-        self.__temp__ = ADC(Pin(14))  # 溫度傳感器
+        self.__temp__ = ADC(Pin(34))  # 溫度傳感器
         self.__temp__.atten(ADC.ATTN_11DB)
         self.lastTemp = 0
 
@@ -22,7 +22,7 @@ class Temp():
         try:
             T = 1 / ((1 / self.T0) + (1 / self.B) *
                      math.log(self.Rt*2 / self.R1))
-            self.lastTemp = T - self.T0 + 95
+            self.lastTemp = T - self.T0 + 67
         except:
             pass
         return self.lastTemp
