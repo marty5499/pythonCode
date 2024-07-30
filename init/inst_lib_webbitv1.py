@@ -269,6 +269,7 @@ def install(deviceId=''):
     Res.exe('lib/webduino/wifi.py')
     Res.exe('lib/webduino/webserver.py')
     Res.exe('lib/webduino/debug.py')
+    Res.exe('lib/webduino/espnow.py')
     Res.exe('lib/utils.py') # save url to file
     Res.get('','index.html')
     
