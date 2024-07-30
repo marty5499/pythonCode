@@ -34,15 +34,17 @@ class ESPNow:
                     self.file_buffer[filename] = bytearray(total_length)
 
                 self.file_buffer[filename][start_byte:start_byte + len(file_data)] = file_data
-                self.irecv(recvTime)
+                
                 # 检查是否所有区块都已接收
                 if total_length == (start_byte + len(file_data)):
                     # 文件已完整，写入文件
                     with open(filename, 'wb') as f:
                         f.write(self.file_buffer[filename])
                     print("File " + filename + " written successfully")
-                    time.sleep(1)
+                    time.sleep(2)
                     machine.reset()
+                else:
+                    self.irecv(3)
 
 
 def bytearray_find(haystack, needle, start=0):

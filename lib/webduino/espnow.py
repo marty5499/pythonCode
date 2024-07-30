@@ -8,27 +8,25 @@ class ESPNow:
         self.e = espnow.ESPNow() 
         self.e.active(True)
         if not peer_str == None:
-            peer_hex = ''.join('{:02x}'.format(ord(char)) for char in peer_str)
-            peer_mac = ubinascii.unhexlify(peer_hex)
-            if len(peer_mac) != 6:
-                raise ValueError("ESPNow: bytes or bytearray wrong length")
-            formatted_hex = ''.join(f'\\x{peer_hex[i:i+2]}' for i in range(0, len(peer_hex), 2))
-            print(f"{peer_str}:{formatted_hex}")
-            self.peer_mac = peer_mac
+            if isinstance(peer_str, bytes):
+                self.peer_mac = peer_str
+            else:
+                peer_hex = ''.join('{:02x}'.format(ord(char)) for char in peer_str)
+                peer_mac = ubinascii.unhexlify(peer_hex)
+                if len(peer_mac) != 6:
+                    raise ValueError("ESPNow: bytes or bytearray wrong length")
+                formatted_hex = ''.join(f'\\x{peer_hex[i:i+2]}' for i in range(0, len(peer_hex), 2))
+                #print(f"{peer_str}:{formatted_hex}")
+                self.peer_mac = peer_mac
         else:
-            print("esp01")
-            #self.peer_mac = b'\xff\xff\xff\xff\xff\xff'
-            #self.peer_mac = b'\x5c\xcf\x7f\x68\xe2\xce'
-            self.peer_mac = b'\x18\xfe\x34\xd7\x86\x93'
+            print("broadcast node")
+            self.peer_mac = b'\xff\xff\xff\xff\xff\xff'
         self.e.add_peer(self.peer_mac)
         self.file_buffer = {}
 
     def send(self, message):
-        if self.peer_mac:
-            self.e.send(self.peer_mac, message)
-            print(ubinascii.hexlify(self.peer_mac).decode())
-        else:
-            print("No peer joined. Please join a peer first.")
+        self.e.send(self.peer_mac, message)
+        #print("mac:"+ubinascii.hexlify(self.peer_mac).decode())
 
     def recv(self, callback=None):
         def internal_recv_callback(e):
@@ -58,11 +56,10 @@ class ESPNow:
 
             else:
                 # 非内部控制指令，调用用户提供的回调
-                print("callback")
                 if callback is not None:
                     callback(peer, msg)
-
-        self.e.on_recv(internal_recv_callback)
+        
+        self.e.irq(internal_recv_callback)
 
     def sendFile(self, file_path, target_file, chunk_size, callback=None):
         with open(file_path, 'rb') as f:
@@ -83,7 +80,7 @@ class ESPNow:
             message.extend(chunk_data)
             self.send(message)
             if callback is not None:
-                callback(str(start_byte))
+                callback(self.peer_mac,str(start_byte).encode())
 
 
     def cmd_reset(self):

@@ -52,7 +52,7 @@ print("ready...")
 while True:
     temperature, humidity = read_dht_sensor()
     if temperature is not None and humidity is not None:
-        msg = "{:.1f} C, {:.1f} %".format(temperature, humidity)
+        msg = "71, {:.1f} C, {:.1f} %".format(temperature, humidity)
         broadcast(msg)
         print("send:", msg)
     time.sleep(2)  # 每 2 秒讀取並廣播一次
