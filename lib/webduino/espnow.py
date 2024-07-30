@@ -28,6 +28,10 @@ class ESPNow:
         self.e.send(self.peer_mac, message)
         #print("mac:"+ubinascii.hexlify(self.peer_mac).decode())
 
+    def broadcast(self, message):
+        self.e.send(b'\xff\xff\xff\xff\xff\xff', message)
+        #print("mac:"+ubinascii.hexlify(self.peer_mac).decode())
+
 
 
     def recv(self, callback=None):
