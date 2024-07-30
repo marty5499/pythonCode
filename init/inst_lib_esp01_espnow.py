@@ -1,24 +1,4 @@
-board_devSSID ='e12'
-board_device_id = board_devSSID
-
 import os, usocket, time, ubinascii, network, machine
-
-def do_connect():
-    global connected
-    sta_if = network.WLAN(network.STA_IF)
-    sta_if.active(True)
-    print('connecting to network...')
-    #sta_if.disconnect()
-    if(not sta_if.isconnected()):
-        sta_if.connect('KingKit_MeetingRoom', 'webduino')
-    cnt = 0
-    while not sta_if.isconnected():
-        cnt = cnt + 1
-        time.sleep(0.5)
-        if cnt == 60:
-            break
-    connected = sta_if.isconnected()
-    print('network config:', sta_if.ifconfig())
 
 class Response:
 
@@ -38,8 +18,9 @@ class Response:
     def content(self):
         if self._cached is None:
             try:
+                gc.collect()
                 if self.file is not None:
-                    defSize = 2048
+                    defSize = 512
                     ba = bytearray(defSize)
                     f = open(self.file,"w+")
                     rSize = 0
@@ -164,6 +145,21 @@ def delete(url, **kw):
 
 class Res:
 
+    def save(url,file):
+        try:
+            response = get(url)
+            print(">>",len(response.text) )
+            print("get file:",file,'size:',len(response.text),',save to:',file)
+            f = open(file, 'w')
+            f.write(response.text)
+            f.close()
+            print("OK.")
+        except Exception as e:
+            print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+            print(e)
+            print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+        
+
     def get(path,file):
         try:
             response = save('https://marty5499.github.io/pythonCode/'+path,file=file)
@@ -225,23 +221,54 @@ class Res:
                 pass
         os.chdir('/')
 
-
-def install(deviceId=''):
-
-    # WiFi Connect
+def do_connect():
     print("connect...")
-    do_connect()
-    print("get files...")
+    global connected
+    sta_if = network.WLAN(network.STA_IF)
+    sta_if.active(True)
+    print('connecting to network...')
+    #sta_if.disconnect()
+    if(not sta_if.isconnected()):
+        sta_if.connect('KingKit_MeetingRoom', 'webduino')
+    cnt = 0
+    while not sta_if.isconnected():
+        cnt = cnt + 1
+        time.sleep(0.5)
+        if cnt == 60:
+            break
+    connected = sta_if.isconnected()
+    print('network config:', sta_if.ifconfig())
 
+
+def setup_info(deviceId='',board_devSSID=''):
+    from webduino.config import Config
+    #Utils.save('https://marty5499.github.io/pythonCode/init/boot.py','boot.py')
+    Res.get('init/boot.py','boot.py')
+    Config.load()
+    if(not deviceId == ''):
+        Config.data['devId'] = deviceId
+    else:
+        deviceId = Config.data['devId']
+        
+    if(not board_devSSID == ''):
+        Config.data['devSSID'] = board_devSSID
+    print("-=-=-=-=-=-=-=-=-=-=-=-=-=-=-")
+    print("-    Device ID: [ %s ]    -" % deviceId)
+    print("-=-=-=-=-=-=-=-=-=-=-=-=-=-=-")
+    Config.save()
+    """
+    print('Mac address:',ubinascii.hexlify(network.WLAN().config('mac'),':').decode())    
+    """
+
+def inst_library():
     # 開源必備
     Res.exe('lib/urequests.py')
     Res.exe('lib/umqtt/simple.py')
-    # 小米燈泡
-    Res.exe('lib/uyeelight.py')
     # Webduino 類別庫
     Res.exe('lib/webduino/led.py')
     Res.exe('lib/webduino/config.py')
     Res.exe('lib/webduino/gdriver.py')
+    #Res.exe('lib/webduino/camera.py')
     Res.exe('lib/webduino/board.py')
     Res.exe('lib/webduino/mqtt.py')
     Res.exe('lib/webduino/wifi.py')
@@ -250,47 +277,11 @@ def install(deviceId=''):
     Res.exe('lib/webduino/espnow_8266.py')
     Res.exe('lib/utils.py') # save url to file
     Res.get('','index.html')
-    # 傳感器
-    Res.exe('lib/adxl345.py') # save url to file
-    Res.exe('lib/hmc5883l.py') # save url to file
-    Res.exe('lib/mfrc522.py') # save url to file
-    Res.exe('lib/mlx90614.py') # save url to file
-    Res.exe('lib/RFBtn.py') # save url to file
-    Res.exe('lib/max7219.py') # save url to file
-    Res.exe('lib/ssd1306.py') # save url to file
-    Res.exe('lib/TM1637.py') # save url to file
-    Res.exe('lib/uyeelight.py') # save url to file
-    Res.exe('lib/dfplayer.py') # save url to file
-    Res.exe('lib/dfplayermini.py') # mp3
-    # rotary
-    Res.exe('lib/rotary.py')
-    Res.exe('lib/rotary_irq_esp.py')
-    Res.exe('lib/hcsr04.py') # ultrasonic
-    # LCD1602
-    Res.exe('lib/lcd_api.py')
-    Res.exe('lib/i2c_lcd.py') # save url to file
-    # TTGO
-    Res.exe('lib/st7789.py') # save url to file
-    Res.exe('lib/st7789py.py') # save url to file
-    Res.exe('lib/sysfont.py') # save url to file
-    
-    from utils import Utils
-    from webduino.config import Config
-    Utils.save('https://marty5499.github.io/pythonCode/init/boot.py','boot.py')
-    Config.load()
-    
-    if(not deviceId == ''):
-        Config.data['devId'] = deviceId
-    else:
-        deviceId = Config.data['devId']
-        
-    if(not board_devSSID == ''):
-        Config.data['devSSID'] = board_devSSID
-        
-    print("-=-=-=-=-=-=-=-=-=-=-=-=-=-=-")
-    print("-    Device ID: ["+deviceId+"]    -")
-    Config.save()
-    print("-=-=-=-=-=-=-=-=-=-=-=-=-=-=-")
-    print('Mac address:',ubinascii.hexlify(network.WLAN().config('mac'),':').decode())
 
-install(deviceId = board_device_id)
+def install():
+    id = 'E01'
+    do_connect()
+    inst_library()
+    setup_info(deviceId = id , board_devSSID = id)
+
+install()

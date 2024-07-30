@@ -250,6 +250,11 @@ def install(deviceId=''):
     Res.exe('lib/webduino/espnow_8266.py')
     Res.exe('lib/utils.py') # save url to file
     Res.get('','index.html')
+    # wemos matrix
+    Res.exe('lib/uwemosledmatrix/__init__.py')
+    Res.exe('lib/uwemosledmatrix/font8x8_basic.py')
+    Res.exe('lib/uwemosledmatrix/led_matrix_scroller.py')
+    Res.exe('lib/uwemosledmatrix/wemos_led_matrix.py')
     # 傳感器
     Res.exe('lib/adxl345.py') # save url to file
     Res.exe('lib/hmc5883l.py') # save url to file
@@ -294,3 +299,4 @@ def install(deviceId=''):
     print('Mac address:',ubinascii.hexlify(network.WLAN().config('mac'),':').decode())
 
 install(deviceId = board_device_id)
+
