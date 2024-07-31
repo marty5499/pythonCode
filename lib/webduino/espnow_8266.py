@@ -18,8 +18,8 @@ class ESPNow:
         self.e.add_peer(self.peer_mac)
         self.file_buffer = {}
 
-    def send(self, message):
-        self.e.send(self.peer_mac, message)
+    def send(self, peer_mac, message):
+        self.e.send(peer_mac, message)
         #print("Sent to " + str(self.peer_mac))
 
     def broadcast(self, message):

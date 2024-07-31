@@ -21,8 +21,9 @@ class ESPNow:
                 print(f"join {peer_str}:{formatted_hex}")
                 self.peer_mac = peer_mac
         else:
-            print("broadcast node")
-            self.peer_mac = b'\xff\xff\xff\xff\xff\xff'
+            self.peer_mac = network.WLAN().config('mac')
+            print(ubinascii.hexlify(self.peer_mac, ':').decode())
+
         self.e.add_peer(self.peer_mac)
         self.file_buffer = {}
         self.nodeMap = {}
