@@ -25,10 +25,25 @@ class ESPNow:
             self.peer_mac = b'\xff\xff\xff\xff\xff\xff'
         self.e.add_peer(self.peer_mac)
         self.file_buffer = {}
+        self.nodeMap = {}
+
+    def join(self,peer_data):
+        if isinstance(peer_data, bytes):
+            peer = perr_data
+        else:
+            data = peer_data.split(':')
+            peer = bytes([int(part, 16) for part in data])
+            
+        try: # maybe already join
+            self.e.add_peer(peer)
+            self.nodeMap[peer] = 'join'
+        except:
+            pass
 
     def send(self, message):
-        self.e.send(self.peer_mac, message)
-        #print("mac:"+ubinascii.hexlify(self.peer_mac).decode())
+        for peer_mac in self.nodeMap.keys():
+            self.e.send(peer_mac, message)
+            #print("send:"+ubinascii.hexlify(peer_mac).decode())
 
     def broadcast(self, message):
         self.e.send(b'\xff\xff\xff\xff\xff\xff', message)
