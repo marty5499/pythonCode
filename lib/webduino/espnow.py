@@ -3,6 +3,11 @@ import machine, time
 
 class ESPNow:
     def __init__(self, peer_str = None):
+        ESPNow.CMD_STOP = b'\xf4\xfe'
+        ESPNow.CMD_RST= b'\xff\xff'
+        ESPNow.CMD_ACK= b'\xff\xfe'
+        ESPNow.CMD_BOOT= b'\xff\x00'
+        ESPNow.CMD_FILE= b'\xf4\x10'        
         sta = network.WLAN(network.STA_IF)
         sta.active(True)
         self.e = espnow.ESPNow() 
@@ -21,36 +26,59 @@ class ESPNow:
                 print(f"join {peer_str}:{formatted_hex}")
                 self.peer_mac = peer_mac
         else:
-            self.peer_mac = network.WLAN().config('mac')
-            print(ubinascii.hexlify(self.peer_mac, ':').decode())
+            self.peer_mac = network.WLAN().config('mac') # 6byte
 
         self.e.add_peer(self.peer_mac)
+        self.peer_mac_str = (ubinascii.hexlify(self.peer_mac, ':').decode())
+        print(f"[Mac] {self.peer_mac_str}")
         self.file_buffer = {}
         self.nodeMap = {}
 
+    def cmd(self,msg):
+        if msg == ESPNow.CMD_STOP:
+            return "STOP"
+        elif msg == ESPNow.CMD_RST:
+            return "RST"
+        elif msg == ESPNow.CMD_BOOT:
+            return "BOOT"
+        elif msg == ESPNow.CMD_FILE:
+            return "FILE"
+        elif msg == ESPNow.CMD_ACK:
+            return "ACK"
+        return f"UNKNOWN: {msg}"
+    
     def join(self,peer_data):
+        peer = ''
         if isinstance(peer_data, bytes):
-            peer = perr_data
+            peer = peer_data
         else:
             data = peer_data.split(':')
             peer = bytes([int(part, 16) for part in data])
             
         try: # maybe already join
+            peer_str =':'.join(f'{byte:02x}' for byte in peer)
+            self.nodeMap[peer_str] = peer
+            #print(f"save:[{self.nodeMap}]")
             self.e.add_peer(peer)
-            self.nodeMap[peer] = 'join'
-        except:
-            pass
+        except Exception as e:
+            pass#print(e)
 
-    def send(self, message):
+    def sendCmd(self, cmd , peer_mac_str):
+        print(f"-> stop [{peer_mac_str}]")
+        if peer_mac_str in self.nodeMap:
+            self.e.send(self.nodeMap[peer_mac_str], cmd)
+            
+    def sendAll(self, message):
         for peer_mac in self.nodeMap.keys():
             self.e.send(peer_mac, message)
-            #print("send:"+ubinascii.hexlify(peer_mac).decode())
 
     def broadcast(self, message):
         self.e.send(b'\xff\xff\xff\xff\xff\xff', message)
         #print("mac:"+ubinascii.hexlify(self.peer_mac).decode())
 
-
+    def broadcast_mac(self):
+        self.e.send(b'\xff\xff\xff\xff\xff\xff', 'rst '+self.peer_mac_str)
+        #print("mac:"+ubinascii.hexlify(self.peer_mac).decode())
 
     def recv(self, callback=None):
         def bytearray_find(haystack, needle, start=0):
@@ -66,34 +94,40 @@ class ESPNow:
             else:
                 code = args[0]
                 peer, msg = args[1]
-            peer_str = ''.join(f'{byte:02x}' for byte in peer)
-            print(f"src[{peer_str}] cmd: {msg[0]:02x},{msg[1]:02x}")
-            #"""
-            if len(msg) == 2 and msg[0] == 0xf4 and msg[1] == 0xff:
-                machine.reset()
-            elif len(msg) > 4 and msg[0] == 0xf4 and msg[1] == 0x10:
-                # 这是内部控制指令（接收文件）
-                chunk_size = msg[2]
-                total_length = int.from_bytes(msg[3:7], 'big')
-                end_of_filename = bytearray_find(msg, b'\n', 7)
-                filename = msg[7:end_of_filename].decode()
-                start_byte = int.from_bytes(msg[end_of_filename + 1:end_of_filename + 3], 'big')
-                file_data = msg[end_of_filename + 3:]
-
-                if filename not in self.file_buffer:
-                    self.file_buffer[filename] = bytearray(total_length)
-
-                self.file_buffer[filename][start_byte:start_byte + len(file_data)] = file_data
+            peer_str = ':'.join(f'{byte:02x}' for byte in peer)
+            
+            
+            print(f"<- [{peer_str}] cmd: {self.cmd(msg)}")
+            if len(msg) == 2 and msg[0] & 0xf0 == 0xf0:
+                print(f"<- [{peer_str}] cmd: {self.cmd(msg)}")
                 
-                # 检查是否所有区块都已接收
-                if total_length == (start_byte + len(file_data)):
-                    # 文件已完整，写入文件
-                    with open(filename, 'wb') as f:
-                        f.write(self.file_buffer[filename])
-                    print("File " + filename + " written successfully")
-                    time.sleep(2)
+                if len(msg) == 2 and msg == ESPNow.CMD_RST:
                     machine.reset()
-
+                    
+                elif len(msg) == 2 and msg == ESPNow.CMD_BOOT:
+                    self.join(peer)
+                    self.sendCmd(ESPNow.CMD_STOP, peer_str)
+                    
+                elif len(msg) > 4 and msg[0:2] == ESPNow.CMD_FILE:
+                    # 这是内部控制指令（接收文件）
+                    chunk_size = msg[2]
+                    total_length = int.from_bytes(msg[3:7], 'big')
+                    end_of_filename = bytearray_find(msg, b'\n', 7)
+                    filename = msg[7:end_of_filename].decode()
+                    start_byte = int.from_bytes(msg[end_of_filename + 1:end_of_filename + 3], 'big')
+                    file_data = msg[end_of_filename + 3:]
+                    if filename not in self.file_buffer:
+                        self.file_buffer[filename] = bytearray(total_length)
+                    self.file_buffer[filename][start_byte:start_byte + len(file_data)] = file_data
+                    # 检查是否所有区块都已接收
+                    if total_length == (start_byte + len(file_data)):
+                        # 文件已完整，写入文件
+                        with open(filename, 'wb') as f:
+                            f.write(self.file_buffer[filename])
+                        print("File " + filename + " written successfully")
+                        time.sleep(2)
+                        machine.reset()
+                    
             else:
                 # 非内部控制指令，调用用户提供的回调
                 if callback is not None:
@@ -112,7 +146,7 @@ class ESPNow:
             end_byte = min(start_byte + chunk_size, total_length)
             chunk_data = file_content[start_byte:end_byte]
 
-            message = bytearray([0xf4, 0x10])
+            message = ESPNow.CMD_FILE
             message.append(chunk_size)  # 這邊加入此次傳送的 chunk_size
             message.extend(total_length.to_bytes(4, 'big'))  # 修正這裡，傳送總長度
             message.extend(target_file.encode() + b'\n')
