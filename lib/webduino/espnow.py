@@ -1,5 +1,5 @@
 import espnow, ubinascii, network
-import machine, time
+import machine, time, gc
 
 class ESPNow:
     def __init__(self, peer_str = None):
@@ -7,7 +7,9 @@ class ESPNow:
         ESPNow.CMD_RST= b'\xff\xff'
         ESPNow.CMD_ACK= b'\xff\xfe'
         ESPNow.CMD_BOOT= b'\xff\x00'
-        ESPNow.CMD_FILE= b'\xf4\x10'        
+        ESPNow.CMD_DONE= b'\xf4\x11'
+        ESPNow.CMD_FILE= b'\xf4\x10' 
+        ESPNow.CMD_FILE_WRITE_ACK= b'\xf4\x12'
         sta = network.WLAN(network.STA_IF)
         sta.active(True)
         self.e = espnow.ESPNow() 
@@ -33,6 +35,7 @@ class ESPNow:
         print(f"[Mac] {self.peer_mac_str}")
         self.file_buffer = {}
         self.nodeMap = {}
+        self.cmdMap = {}
 
     def cmd(self,msg):
         if msg == ESPNow.CMD_STOP:
@@ -43,6 +46,10 @@ class ESPNow:
             return "BOOT"
         elif msg == ESPNow.CMD_FILE:
             return "FILE"
+        elif msg == ESPNow.CMD_DONE:
+            return "DONE"
+        elif msg == ESPNow.CMD_FILE_WRITE_ACK:
+            return "FILE_WRITE_ACK"
         elif msg == ESPNow.CMD_ACK:
             return "ACK"
         return f"UNKNOWN: {msg}"
@@ -58,13 +65,16 @@ class ESPNow:
         try: # maybe already join
             peer_str =':'.join(f'{byte:02x}' for byte in peer)
             self.nodeMap[peer_str] = peer
-            #print(f"save:[{self.nodeMap}]")
             self.e.add_peer(peer)
         except Exception as e:
             pass#print(e)
 
+    def send(self, msg , peer_mac_str):
+        if peer_mac_str in self.nodeMap:
+            self.e.send(self.nodeMap[peer_mac_str], msg)
+
     def sendCmd(self, cmd , peer_mac_str):
-        print(f"-> stop [{peer_mac_str}]")
+        print(f"-> {self.cmd(cmd)} [{peer_mac_str}]")
         if peer_mac_str in self.nodeMap:
             self.e.send(self.nodeMap[peer_mac_str], cmd)
             
@@ -80,6 +90,11 @@ class ESPNow:
         self.e.send(b'\xff\xff\xff\xff\xff\xff', 'rst '+self.peer_mac_str)
         #print("mac:"+ubinascii.hexlify(self.peer_mac).decode())
 
+    def recvCmd(self, cmd, peer_str):
+        self.cmdMap[peer_str] = cmd
+        while peer_str in self.cmdMap:
+            time.sleep(0.01)
+
     def recv(self, callback=None):
         def bytearray_find(haystack, needle, start=0):
             needle_len = len(needle)
@@ -94,20 +109,35 @@ class ESPNow:
             else:
                 code = args[0]
                 peer, msg = args[1]
+
             peer_str = ':'.join(f'{byte:02x}' for byte in peer)
-            
-            
-            print(f"<- [{peer_str}] cmd: {self.cmd(msg)}")
             if len(msg) == 2 and msg[0] & 0xf0 == 0xf0:
                 print(f"<- [{peer_str}] cmd: {self.cmd(msg)}")
                 
-                if len(msg) == 2 and msg == ESPNow.CMD_RST:
+                if msg == ESPNow.CMD_RST:
                     machine.reset()
                     
-                elif len(msg) == 2 and msg == ESPNow.CMD_BOOT:
+                elif msg == ESPNow.CMD_BOOT:
                     self.join(peer)
-                    self.sendCmd(ESPNow.CMD_STOP, peer_str)
+                    if peer_str in self.cmdMap and self.cmdMap[peer_str] == ESPNow.CMD_BOOT:
+                        del self.cmdMap[peer_str]
+                    #self.sendCmd(ESPNow.CMD_STOP, peer_str)
                     
+                elif msg == ESPNow.CMD_ACK:
+                    if peer_str in self.cmdMap and self.cmdMap[peer_str] == ESPNow.CMD_ACK:
+                        del self.cmdMap[peer_str]
+                    #def sendOK(peer, msg, peers_table):
+                    #    print(f"sendOK:{msg}")
+                    #self.sendFile(peer_str, "./hello.py", "./hello_ok.py", 200, sendOK)
+                    
+                elif msg == ESPNow.CMD_DONE:
+                    if peer_str in self.cmdMap and self.cmdMap[peer_str] == ESPNow.CMD_DONE:
+                        del self.cmdMap[peer_str]
+                    
+                elif msg == ESPNow.CMD_FILE_WRITE_ACK:
+                    if peer_str in self.cmdMap and self.cmdMap[peer_str] == ESPNow.CMD_FILE_WRITE_ACK:
+                        del self.cmdMap[peer_str]
+
                 elif len(msg) > 4 and msg[0:2] == ESPNow.CMD_FILE:
                     # 这是内部控制指令（接收文件）
                     chunk_size = msg[2]
@@ -125,8 +155,7 @@ class ESPNow:
                         with open(filename, 'wb') as f:
                             f.write(self.file_buffer[filename])
                         print("File " + filename + " written successfully")
-                        time.sleep(2)
-                        machine.reset()
+                        self.sendCmd(ESPNow.CMD_DONE, peer_str)
                     
             else:
                 # 非内部控制指令，调用用户提供的回调
@@ -135,27 +164,36 @@ class ESPNow:
             #"""
         self.e.irq(internal_recv_callback)
 
-    def sendFile(self, file_path, target_file, chunk_size, callback=None):
+    def sendSyncFile(self, peer_mac_str, file_path, target_file, chunk_size, callback=None):
+        self.join(peer_mac_str)
+        self.sendCmd(ESPNow.CMD_RST, peer_mac_str)
+        self.recvCmd(ESPNow.CMD_BOOT, peer_mac_str)
+        self.sendCmd(ESPNow.CMD_STOP, peer_mac_str)
+        self.recvCmd(ESPNow.CMD_ACK, peer_mac_str)
+        self.sendFile(peer_mac_str, file_path, target_file, chunk_size, callback)
+
+    def sendFile(self, peer_mac_str, file_path, target_file, chunk_size, callback=None):
+        self.join(peer_mac_str)
         with open(file_path, 'rb') as f:
             file_content = f.read()
-
         total_length = len(file_content)
         total_chunks = (total_length + chunk_size - 1) // chunk_size
         for chunk_index in range(total_chunks):
             start_byte = chunk_index * chunk_size
             end_byte = min(start_byte + chunk_size, total_length)
             chunk_data = file_content[start_byte:end_byte]
-
-            message = ESPNow.CMD_FILE
+            message = bytearray(ESPNow.CMD_FILE)
             message.append(chunk_size)  # 這邊加入此次傳送的 chunk_size
             message.extend(total_length.to_bytes(4, 'big'))  # 修正這裡，傳送總長度
             message.extend(target_file.encode() + b'\n')
             message.extend(start_byte.to_bytes(2, 'big'))
             message.extend(chunk_data)
-            self.send(message)
+            self.send(message, peer_mac_str)
+            # wait response
+            self.recvCmd(ESPNow.CMD_FILE_WRITE_ACK, peer_mac_str)
             if callback is not None:
-                callback(self.peer_mac , str(start_byte).encode() , self.e.peers_table)
-
+                callback(peer_mac_str , end_byte , total_length)
+        gc.collect()
 
     def cmd_reset(self):
         message = bytearray([0xf4, 0xff])
