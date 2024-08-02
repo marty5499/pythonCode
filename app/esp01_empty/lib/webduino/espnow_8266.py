@@ -8,7 +8,6 @@ class ESPNow:
         ESPNow.CMD_BOOT= b'\xff\x00'
         ESPNow.CMD_STOP = b'\xf4\xfe'
         ESPNow.CMD_FILE= b'\xf4\x10'
-        ESPNow.CMD_JOIN= b'\xff\x13'
         ESPNow.CMD_DONE= b'\xf4\x11'
         ESPNow.CMD_FILE_WRITE_ACK= b'\xf4\x12'
         sta = network.WLAN(network.STA_IF); sta.active(False)
@@ -33,8 +32,6 @@ class ESPNow:
             return "RST"
         elif msg == ESPNow.CMD_BOOT:
             return "BOOT"
-        elif msg == ESPNow.CMD_JOIN:
-            return "JOIN"
         elif msg[0:2] == ESPNow.CMD_FILE:
             return "FILE"
         elif msg[0:2] == ESPNow.CMD_FILE_WRITE_ACK:
@@ -55,6 +52,7 @@ class ESPNow:
 
         try: # maybe already join
             peer_str =':'.join(f'{byte:02x}' for byte in peer)
+            self.nodeMap[peer_str] = peer
             #print(f"save:[{self.nodeMap}]")
             self.e.add_peer(peer)
         except Exception as e:
@@ -72,7 +70,6 @@ class ESPNow:
 
     def sendAll(self, message):
         for peer_mac in self.nodeMap.keys():
-            print(f"send {peer_mac}")
             self.e.send(self.nodeMap[peer_mac], message)
 
     def broadcast(self, message):
@@ -100,11 +97,7 @@ class ESPNow:
                     
                 elif msg == ESPNow.CMD_STOP:
                     self.sendCmd(ESPNow.CMD_ACK, peer_str)
-                    while True: self.irecv(1)
-
-            elif len(msg) > 4 and msg[0:2] == ESPNow.CMD_JOIN:
-                peer_str = msg[2:].decode()
-                self.join(peer_str) # peer_str
+                    self.irecv(900)
                 
             elif len(msg) > 4 and msg[0:2] == ESPNow.CMD_FILE:
                 print(f"<- [{peer_str}] cmd: {self.cmd(msg)}")
@@ -134,7 +127,7 @@ class ESPNow:
             else:
                 # 非内部控制指令，调用用户提供的回调
                 if self.callback is not None:
-                    self.callback(peer, msg)
+                    self.callback(peer, msg, self.e.peers_table)
 
 def bytearray_find(haystack, needle, start=0):
     needle_len = len(needle)
