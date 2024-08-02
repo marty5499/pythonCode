@@ -55,7 +55,7 @@ class ESPNow:
 
         try: # maybe already join
             peer_str =':'.join(f'{byte:02x}' for byte in peer)
-            #print(f"save:[{self.nodeMap}]")
+            self.nodeMap[peer_str] = peer
             self.e.add_peer(peer)
         except Exception as e:
             pass#print(e)
