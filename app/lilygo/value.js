@@ -1,0 +1,1 @@
+var data={'passwd3': '', 'openAp': 'Yes', 'passwd1': 'webduino', 'devPasswd': '12345678', 'devSSID': 'b01', 'zone': 'global', 'ssid1': 'KingKit_2.4G', 'ssid2': '', 'ssid3': '', 'stream': '0', 'passwd2': '', 'devId': 'b01', 'resolution': 'res3'}

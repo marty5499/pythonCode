@@ -10,6 +10,7 @@ onMsg = None
 
 def callback(peer , msg , peers_table):
     msg = msg.decode()
+    print(f"msg:{msg}")
     info = [item.strip() for item in msg.split(',')]
     rssi = [values[0] for values in peers_table.values()]
     #print(f"recv[{msg}], {str(peers_table)}")
