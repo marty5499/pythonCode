@@ -7,8 +7,9 @@ class ESPNow:
         ESPNow.CMD_RST= b'\xff\xff'
         ESPNow.CMD_ACK= b'\xff\xfe'
         ESPNow.CMD_BOOT= b'\xff\x00'
+        ESPNow.CMD_JOIN= b'\xff\x13'
         ESPNow.CMD_DONE= b'\xf4\x11'
-        ESPNow.CMD_FILE= b'\xf4\x10' 
+        ESPNow.CMD_FILE= b'\xf4\x10'
         ESPNow.CMD_FILE_WRITE_ACK= b'\xf4\x12'
         sta = network.WLAN(network.STA_IF)
         sta.active(True)
@@ -46,6 +47,8 @@ class ESPNow:
             return "BOOT"
         elif msg == ESPNow.CMD_FILE:
             return "FILE"
+        elif msg == ESPNow.CMD_JOIN:
+            return "JOIN"
         elif msg == ESPNow.CMD_DONE:
             return "DONE"
         elif msg == ESPNow.CMD_FILE_WRITE_ACK:
@@ -73,6 +76,12 @@ class ESPNow:
         if peer_mac_str in self.nodeMap:
             self.e.send(self.nodeMap[peer_mac_str], msg)
 
+    def sendJoin(self,peer_str,peer_mac_str):
+        if peer_mac_str in self.nodeMap:
+            message = bytearray(ESPNow.CMD_JOIN)
+            message.extend(peer_str)
+            self.e.send(self.nodeMap[peer_mac_str], message )
+        
     def sendCmd(self, cmd , peer_mac_str):
         print(f"-> {self.cmd(cmd)} [{peer_mac_str}]")
         if peer_mac_str in self.nodeMap:
@@ -137,6 +146,9 @@ class ESPNow:
                 elif msg == ESPNow.CMD_FILE_WRITE_ACK:
                     if peer_str in self.cmdMap and self.cmdMap[peer_str] == ESPNow.CMD_FILE_WRITE_ACK:
                         del self.cmdMap[peer_str]
+
+                elif len(msg) > 4 and msg[0:2] == ESPNow.CMD_JOIN:
+                    self.join(msg[3:])
 
                 elif len(msg) > 4 and msg[0:2] == ESPNow.CMD_FILE:
                     # 这是内部控制指令（接收文件）
