@@ -76,16 +76,16 @@ class ESPNow:
         if peer_mac_str in self.nodeMap:
             self.e.send(self.nodeMap[peer_mac_str], msg)
 
-    def sendJoin(self,peer_str,peer_mac_str):
-        if peer_mac_str in self.nodeMap:
+    def sendJoin(self,to_peer_mac_str, data_peer_str):
+        if to_peer_mac_str in self.nodeMap:
             message = bytearray(ESPNow.CMD_JOIN)
-            message.extend(peer_str)
-            self.e.send(self.nodeMap[peer_mac_str], message )
+            message.extend(data_peer_str)
+            self.e.send(self.nodeMap[to_peer_mac_str], message )
         
     def sendCmd(self, cmd , peer_mac_str):
-        print(f"-> {self.cmd(cmd)} [{peer_mac_str}]")
         if peer_mac_str in self.nodeMap:
             self.e.send(self.nodeMap[peer_mac_str], cmd)
+            print(f"-> {self.cmd(cmd)} [{peer_mac_str}]")
             
     def sendAll(self, message):
         for peer_mac in self.nodeMap.keys():
@@ -128,6 +128,9 @@ class ESPNow:
                     
                 elif msg == ESPNow.CMD_BOOT:
                     self.join(peer)
+                    # 通知開機的peer加入本身peer
+                    print(f"set {peer_str} to oin....{self.peer_mac_str}")
+                    self.sendJoin(peer_str, self.peer_mac_str)
                     if peer_str in self.cmdMap and self.cmdMap[peer_str] == ESPNow.CMD_BOOT:
                         del self.cmdMap[peer_str]
                     #self.sendCmd(ESPNow.CMD_STOP, peer_str)
@@ -135,9 +138,6 @@ class ESPNow:
                 elif msg == ESPNow.CMD_ACK:
                     if peer_str in self.cmdMap and self.cmdMap[peer_str] == ESPNow.CMD_ACK:
                         del self.cmdMap[peer_str]
-                    #def sendOK(peer, msg, peers_table):
-                    #    print(f"sendOK:{msg}")
-                    #self.sendFile(peer_str, "./hello.py", "./hello_ok.py", 200, sendOK)
                     
                 elif msg == ESPNow.CMD_DONE:
                     if peer_str in self.cmdMap and self.cmdMap[peer_str] == ESPNow.CMD_DONE:
