@@ -72,9 +72,10 @@ class ESPNow:
         except Exception as e:
             pass#print(e)
 
-    def send(self, msg , peer_mac_str):
+    def send(self, peer_mac_str, msg):
         if peer_mac_str in self.nodeMap:
             self.e.send(self.nodeMap[peer_mac_str], msg)
+            #print(f"send: {peer_mac_str}: {msg}")
 
     def sendJoin(self,to_peer_mac_str, data_peer_str):
         if to_peer_mac_str in self.nodeMap:
@@ -88,8 +89,8 @@ class ESPNow:
             print(f"-> {self.cmd(cmd)} [{peer_mac_str}]")
             
     def sendAll(self, message):
-        for peer_mac in self.nodeMap.keys():
-            self.e.send(peer_mac, message)
+        for peer_mac_str in self.nodeMap.keys():
+            self.e.send(self.nodeMap[peer_mac_str], message)
 
     def broadcast(self, message):
         self.e.send(b'\xff\xff\xff\xff\xff\xff', message)
@@ -200,7 +201,7 @@ class ESPNow:
             message.extend(target_file.encode() + b'\n')
             message.extend(start_byte.to_bytes(2, 'big'))
             message.extend(chunk_data)
-            self.send(message, peer_mac_str)
+            self.send(peer_mac_str, message)
             # wait response
             self.recvCmd(ESPNow.CMD_FILE_WRITE_ACK, peer_mac_str)
             if callback is not None:
