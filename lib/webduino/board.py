@@ -8,8 +8,9 @@ from machine import Timer
 
 class Board: 
     
-    Ver = '0.2.4' 
+    Ver = '0.2.5a' 
     def __init__(self,devId='',mqttServer='mqtt1.webduino.io',topic_report='waboard/state',topic_report_msg='disconnect'):
+        #debug.on()
         self.wifi = WiFi
         self.mqtt = MQTT
         self.mqttServer = mqttServer
@@ -66,6 +67,7 @@ class Board:
             if self.wifi.connect(ssid,pwd):
                 break
         debug.print("WiFi Ready , MQTT Ready , ready to go...")
+        # 限制只能接收訂閱 ${deviceId} 底下
         self.mqtt.sub(self.devId+"/#", self.dispatch)
         if(self.topic_report == 'waboard/state'):
             self.onTopic('cmd',self.execCmd)
@@ -100,18 +102,19 @@ class Board:
             time.sleep(0.1)
 
     def check(self):
-        self.mqtt.checkMsg()
+        #self.mqtt.checkMsg()
+        self.mqtt.client.check_msg()
         self.now = self.now + 1
-        if self.now % 300 == 0:
+        if self.now % 600 == 0:
             #print("mqtt ping...")
             try:
                 self.mqtt.client.ping()
             except:
                 #print("mqtt broken!")
                 pass
-        if self.now % 600 == 0:
-            debug.print("wifi check...",self.wifi.checkConnection(self.now))
-            self.now = 0        
+        #if self.now % 600 == 0:
+        #    debug.print("wifi check...",self.wifi.checkConnection(self.now))
+        #    self.now = 0        
         
     def ping(self):
         self.mqtt.client.ping()

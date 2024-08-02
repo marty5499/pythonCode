@@ -38,7 +38,7 @@ class MQTT:
         try:
             MQTT.client.check_msg()
             MQTT.now += 1 
-            if MQTT.now % 60 == 0:
+            if MQTT.now % 600 == 0:
                 debug.print("MQTT ping")
                 MQTT.now = 0
                 MQTT.client.ping()

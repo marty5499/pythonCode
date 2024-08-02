@@ -9,6 +9,8 @@ class ESPNow:
         ESPNow.CMD_BOOT= b'\xff\x00'
         ESPNow.CMD_JOIN= b'\xff\x13'
         ESPNow.CMD_DONE= b'\xf4\x11'
+        ESPNow.CMD_PUB= b'\xf4\x20'
+        ESPNow.CMD_SUB= b'\xf4\x21'
         ESPNow.CMD_FILE= b'\xf4\x10'
         ESPNow.CMD_FILE_WRITE_ACK= b'\xf4\x12'
         sta = network.WLAN(network.STA_IF)
@@ -43,6 +45,10 @@ class ESPNow:
             return "STOP"
         elif msg == ESPNow.CMD_RST:
             return "RST"
+        elif msg == ESPNow.CMD_PUB:
+            return "PUB"
+        elif msg == ESPNow.CMD_SUB:
+            return "SUB"
         elif msg == ESPNow.CMD_BOOT:
             return "BOOT"
         elif msg == ESPNow.CMD_FILE:
@@ -147,6 +153,14 @@ class ESPNow:
                 elif msg == ESPNow.CMD_FILE_WRITE_ACK:
                     if peer_str in self.cmdMap and self.cmdMap[peer_str] == ESPNow.CMD_FILE_WRITE_ACK:
                         del self.cmdMap[peer_str]
+
+                elif len(msg) > 4 and msg[0:2] == ESPNow.CMD_PUB:
+                    topic_pub = msg[3:] # topicName , data
+                    # ...
+
+                elif len(msg) > 4 and msg[0:2] == ESPNow.CMD_SUB:
+                    topic_sub = msg[3:] # topicName
+                    # ...
 
                 elif len(msg) > 4 and msg[0:2] == ESPNow.CMD_JOIN:
                     self.join(msg[3:])
